@@ -1,0 +1,46 @@
+baseurl: "/"
+title: "Alice Tivarovsky"
+author: "Alice Tivarovsky"
+canonifyurls: yes
+languagecode: en
+paginate: 3
+theme: hugo-renga
+enableEmoji: yes
+hasCJKLanguage: yes
+ignoreFiles:
+  - \.Rmd$
+  - \.Rmarkdown$
+  - _files$
+  - _cache$
+params:
+  copyright: © Alice Tivarovsky
+  copyrightUrl: "/"
+  email: ativarovsky@gmail.com
+  faviconfile: image/avatar.png
+  github: ativarovsky
+  highlightjs: true
+  linkedin: "alicetivarovsky"
+  logofile: image/IMG_2421.png
+  pagetitle: "Alice Tivarovsky"
+  posts_navigation: yes
+  progressively: no
+  twitter: "ativarovsky"
+  uselatex: yes
+menu:
+  primary:
+    - identifier: about
+      name: About
+      url: /about/
+      weight: 1
+    - identifier: blog
+      name: Blog
+      url: /blog/
+      weight: 2
+    - identifier: projects
+      name: Projects
+      url: /projects/
+      weight: 3
+    - identifier: Contact
+      name: Contact
+      url: /contact/
+      weight: 4
