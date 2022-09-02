@@ -38,7 +38,7 @@ For more details, please see my [résumé](/pdf/Alice Tivarovsky Resume AUG 2022
 -	Built and maintained course websites
 -	Taught weekly labs, held weekly office hours
 
-#### Jun 2019 - Sep 2019 | Graduate Intern | New York City Department of Health
+### Jun 2019 - Sep 2019 | Graduate Intern | New York City Department of Health
 - Investigated associations between mental illness and socioeconomic/demographic risk factors using SAS (n = 10,000) 
 - Created GIS heat map of depression prevalence across the five boroughs of New York City 
 - [Presented](/pdf/Practicum_Poster_Alice_Tivarovsky.pdf) key findings to internal unit and broader bureau audience 
