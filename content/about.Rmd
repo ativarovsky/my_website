@@ -1,13 +1,16 @@
 ---
-date: "2022-08-31"
-description: About description.
-menu: main
-title: About
+title: "About"
+author: "Alice Tivarovsky"
+date: '2022-09-02'
+output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 Below is a snapshot of my career thus far. My journey to public health has been, shall we say, non-linear. But good stories always have some plot twists and turns. Today, I feel fortunate to work in a highly visible field, where I get to play with data, help policy-makers make decisions, and ultimately leave a positive impact on my community. 
 
-For more details, please see my résumé and find me on [LinkedIn](https://www.linkedin.com/in/alice-tivarovsky-56281131/). 
+For more details, please see my [résumé](/pdf/Alice Tivarovsky Resume AUG 2022.pdf) and find me on [LinkedIn](https://www.linkedin.com/in/alice-tivarovsky-56281131/). 
 
 ***
 ### Education
@@ -38,7 +41,7 @@ For more details, please see my résumé and find me on [LinkedIn](https://www.l
 #### Jun 2019 - Sep 2019 | Graduate Intern | New York City Department of Health
 - Investigated associations between mental illness and socioeconomic/demographic risk factors using SAS (n = 10,000) 
 - Created GIS heat map of depression prevalence across the five boroughs of New York City 
-- [Presented]() key findings to internal unit and broader bureau audience 
+- [Presented](/pdf/Practicum_Poster_Alice_Tivarovsky.pdf) key findings to internal unit and broader bureau audience 
 
 ### Jan 2016 - May 2018 | Sr Supply Chain Lead | Johnson & Johnson  
 - Resolved supply chain disruptions with 46 chemical suppliers across Johnson & Johnson North America - Supported new product launches by building relationships with new suppliers and managing launch activities        
@@ -51,6 +54,4 @@ For more details, please see my résumé and find me on [LinkedIn](https://www.l
 
 ### Oct 2009 - Aug 2012 | Chemical Engineer | Johnson & Johnson  
 - Achieved 40% reduction in cycle times by re-designing multi-phase processes for single-phase production 
-- Re-designed and validated processes for 4 product formulas as part of Paraben elimination \
-
-
+- Re-designed and validated processes for 4 product formulas as part of Paraben elimination
