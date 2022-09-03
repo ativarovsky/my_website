@@ -27,6 +27,7 @@ params:
   twitter: "ativarovsky"
   uselatex: yes
 
+
 menu:
   primary:
     - identifier: about
@@ -45,4 +46,5 @@ menu:
       name: Contact
       url: /contact/
       weight: 4
+      
 
