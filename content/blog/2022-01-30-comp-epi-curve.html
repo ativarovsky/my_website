@@ -1,0 +1,352 @@
+---
+title: Plotting Comparative Covid-19 Incidence with ggplot2
+author: "alice"
+date: '2022-01-30'
+excerpt: "A DIY Epi Curve, Just for Fun"
+toc: true
+tags:
+  - Epidemics
+  - Modeling
+--- 
+
+
+<div id="TOC">
+
+</div>
+
+<div id="motivation" class="section level2">
+<h2>Motivation</h2>
+<p>Covid-19 - the bug that won’t go away. It’s hard to believe we’ve been here for over 2 years. Perhaps like you, I went from checking the Epi curves daily back in 2019, to loneliness and pandemic fatigue, to baking sourdough and planting stuff, to kind of, sort of, almost going back to normal. And then… Omicron. So here we are, back in the familiar bubble.</p>
+<p>Speaking of Epi curves, it’s very easy to make one of your own - certainly easier than sourdough starter. Here’s one using <code>ggplot2</code> and the Covid-19 global dataset maintained by <a href="https://ourworldindata.org/coronavirus-source-data">Our World in Data, OWID</a>. OWID compiles this dataset from several sources including the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University, national government reports, and the Human Mortality Database (2021).</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+</div>
+<div id="data-preparation" class="section level2">
+<h2>Data Preparation</h2>
+<p>First, let’s import and examine the .csv from the “Our World in Data” Github <a href="https://github.com/owid/covid-19-data/tree/master/public/data">repo</a>.</p>
+<pre class="r"><code>raw_data = read.csv(&quot;./data//owid-covid-data.csv&quot;)
+str(raw_data)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    157936 obs. of  67 variables:
+##  $ iso_code                                  : chr  &quot;AFG&quot; &quot;AFG&quot; &quot;AFG&quot; &quot;AFG&quot; ...
+##  $ continent                                 : chr  &quot;Asia&quot; &quot;Asia&quot; &quot;Asia&quot; &quot;Asia&quot; ...
+##  $ location                                  : chr  &quot;Afghanistan&quot; &quot;Afghanistan&quot; &quot;Afghanistan&quot; &quot;Afghanistan&quot; ...
+##  $ date                                      : chr  &quot;2020-02-24&quot; &quot;2020-02-25&quot; &quot;2020-02-26&quot; &quot;2020-02-27&quot; ...
+##  $ total_cases                               : num  5 5 5 5 5 5 5 5 5 5 ...
+##  $ new_cases                                 : num  5 0 0 0 0 0 0 0 0 0 ...
+##  $ new_cases_smoothed                        : num  NA NA NA NA NA 0.714 0.714 0 0 0 ...
+##  $ total_deaths                              : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ new_deaths                                : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ new_deaths_smoothed                       : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ total_cases_per_million                   : num  0.126 0.126 0.126 0.126 0.126 0.126 0.126 0.126 0.126 0.126 ...
+##  $ new_cases_per_million                     : num  0.126 0 0 0 0 0 0 0 0 0 ...
+##  $ new_cases_smoothed_per_million            : num  NA NA NA NA NA 0.018 0.018 0 0 0 ...
+##  $ total_deaths_per_million                  : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ new_deaths_per_million                    : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ new_deaths_smoothed_per_million           : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ reproduction_rate                         : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ icu_patients                              : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ icu_patients_per_million                  : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ hosp_patients                             : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ hosp_patients_per_million                 : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ weekly_icu_admissions                     : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ weekly_icu_admissions_per_million         : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ weekly_hosp_admissions                    : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ weekly_hosp_admissions_per_million        : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ new_tests                                 : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ total_tests                               : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ total_tests_per_thousand                  : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ new_tests_per_thousand                    : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ new_tests_smoothed                        : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ new_tests_smoothed_per_thousand           : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ positive_rate                             : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ tests_per_case                            : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ tests_units                               : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  $ total_vaccinations                        : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ people_vaccinated                         : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ people_fully_vaccinated                   : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ total_boosters                            : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ new_vaccinations                          : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ new_vaccinations_smoothed                 : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ total_vaccinations_per_hundred            : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ people_vaccinated_per_hundred             : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ people_fully_vaccinated_per_hundred       : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ total_boosters_per_hundred                : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ new_vaccinations_smoothed_per_million     : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ new_people_vaccinated_smoothed            : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ new_people_vaccinated_smoothed_per_hundred: num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ stringency_index                          : num  8.33 8.33 8.33 8.33 8.33 ...
+##  $ population                                : num  39835428 39835428 39835428 39835428 39835428 ...
+##  $ population_density                        : num  54.4 54.4 54.4 54.4 54.4 ...
+##  $ median_age                                : num  18.6 18.6 18.6 18.6 18.6 18.6 18.6 18.6 18.6 18.6 ...
+##  $ aged_65_older                             : num  2.58 2.58 2.58 2.58 2.58 ...
+##  $ aged_70_older                             : num  1.34 1.34 1.34 1.34 1.34 ...
+##  $ gdp_per_capita                            : num  1804 1804 1804 1804 1804 ...
+##  $ extreme_poverty                           : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ cardiovasc_death_rate                     : num  597 597 597 597 597 ...
+##  $ diabetes_prevalence                       : num  9.59 9.59 9.59 9.59 9.59 9.59 9.59 9.59 9.59 9.59 ...
+##  $ female_smokers                            : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ male_smokers                              : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ handwashing_facilities                    : num  37.7 37.7 37.7 37.7 37.7 ...
+##  $ hospital_beds_per_thousand                : num  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 ...
+##  $ life_expectancy                           : num  64.8 64.8 64.8 64.8 64.8 ...
+##  $ human_development_index                   : num  0.511 0.511 0.511 0.511 0.511 0.511 0.511 0.511 0.511 0.511 ...
+##  $ excess_mortality_cumulative_absolute      : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ excess_mortality_cumulative               : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ excess_mortality                          : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ excess_mortality_cumulative_per_million   : num  NA NA NA NA NA NA NA NA NA NA ...</code></pre>
+<pre class="r"><code>head(raw_data)</code></pre>
+<pre><code>##   iso_code continent    location       date total_cases new_cases
+## 1      AFG      Asia Afghanistan 2020-02-24           5         5
+## 2      AFG      Asia Afghanistan 2020-02-25           5         0
+## 3      AFG      Asia Afghanistan 2020-02-26           5         0
+## 4      AFG      Asia Afghanistan 2020-02-27           5         0
+## 5      AFG      Asia Afghanistan 2020-02-28           5         0
+## 6      AFG      Asia Afghanistan 2020-02-29           5         0
+##   new_cases_smoothed total_deaths new_deaths new_deaths_smoothed
+## 1                 NA           NA         NA                  NA
+## 2                 NA           NA         NA                  NA
+## 3                 NA           NA         NA                  NA
+## 4                 NA           NA         NA                  NA
+## 5                 NA           NA         NA                  NA
+## 6              0.714           NA         NA                  NA
+##   total_cases_per_million new_cases_per_million new_cases_smoothed_per_million
+## 1                   0.126                 0.126                             NA
+## 2                   0.126                 0.000                             NA
+## 3                   0.126                 0.000                             NA
+## 4                   0.126                 0.000                             NA
+## 5                   0.126                 0.000                             NA
+## 6                   0.126                 0.000                          0.018
+##   total_deaths_per_million new_deaths_per_million
+## 1                       NA                     NA
+## 2                       NA                     NA
+## 3                       NA                     NA
+## 4                       NA                     NA
+## 5                       NA                     NA
+## 6                       NA                     NA
+##   new_deaths_smoothed_per_million reproduction_rate icu_patients
+## 1                              NA                NA           NA
+## 2                              NA                NA           NA
+## 3                              NA                NA           NA
+## 4                              NA                NA           NA
+## 5                              NA                NA           NA
+## 6                              NA                NA           NA
+##   icu_patients_per_million hosp_patients hosp_patients_per_million
+## 1                       NA            NA                        NA
+## 2                       NA            NA                        NA
+## 3                       NA            NA                        NA
+## 4                       NA            NA                        NA
+## 5                       NA            NA                        NA
+## 6                       NA            NA                        NA
+##   weekly_icu_admissions weekly_icu_admissions_per_million
+## 1                    NA                                NA
+## 2                    NA                                NA
+## 3                    NA                                NA
+## 4                    NA                                NA
+## 5                    NA                                NA
+## 6                    NA                                NA
+##   weekly_hosp_admissions weekly_hosp_admissions_per_million new_tests
+## 1                     NA                                 NA        NA
+## 2                     NA                                 NA        NA
+## 3                     NA                                 NA        NA
+## 4                     NA                                 NA        NA
+## 5                     NA                                 NA        NA
+## 6                     NA                                 NA        NA
+##   total_tests total_tests_per_thousand new_tests_per_thousand
+## 1          NA                       NA                     NA
+## 2          NA                       NA                     NA
+## 3          NA                       NA                     NA
+## 4          NA                       NA                     NA
+## 5          NA                       NA                     NA
+## 6          NA                       NA                     NA
+##   new_tests_smoothed new_tests_smoothed_per_thousand positive_rate
+## 1                 NA                              NA            NA
+## 2                 NA                              NA            NA
+## 3                 NA                              NA            NA
+## 4                 NA                              NA            NA
+## 5                 NA                              NA            NA
+## 6                 NA                              NA            NA
+##   tests_per_case tests_units total_vaccinations people_vaccinated
+## 1             NA                             NA                NA
+## 2             NA                             NA                NA
+## 3             NA                             NA                NA
+## 4             NA                             NA                NA
+## 5             NA                             NA                NA
+## 6             NA                             NA                NA
+##   people_fully_vaccinated total_boosters new_vaccinations
+## 1                      NA             NA               NA
+## 2                      NA             NA               NA
+## 3                      NA             NA               NA
+## 4                      NA             NA               NA
+## 5                      NA             NA               NA
+## 6                      NA             NA               NA
+##   new_vaccinations_smoothed total_vaccinations_per_hundred
+## 1                        NA                             NA
+## 2                        NA                             NA
+## 3                        NA                             NA
+## 4                        NA                             NA
+## 5                        NA                             NA
+## 6                        NA                             NA
+##   people_vaccinated_per_hundred people_fully_vaccinated_per_hundred
+## 1                            NA                                  NA
+## 2                            NA                                  NA
+## 3                            NA                                  NA
+## 4                            NA                                  NA
+## 5                            NA                                  NA
+## 6                            NA                                  NA
+##   total_boosters_per_hundred new_vaccinations_smoothed_per_million
+## 1                         NA                                    NA
+## 2                         NA                                    NA
+## 3                         NA                                    NA
+## 4                         NA                                    NA
+## 5                         NA                                    NA
+## 6                         NA                                    NA
+##   new_people_vaccinated_smoothed new_people_vaccinated_smoothed_per_hundred
+## 1                             NA                                         NA
+## 2                             NA                                         NA
+## 3                             NA                                         NA
+## 4                             NA                                         NA
+## 5                             NA                                         NA
+## 6                             NA                                         NA
+##   stringency_index population population_density median_age aged_65_older
+## 1             8.33   39835428             54.422       18.6         2.581
+## 2             8.33   39835428             54.422       18.6         2.581
+## 3             8.33   39835428             54.422       18.6         2.581
+## 4             8.33   39835428             54.422       18.6         2.581
+## 5             8.33   39835428             54.422       18.6         2.581
+## 6             8.33   39835428             54.422       18.6         2.581
+##   aged_70_older gdp_per_capita extreme_poverty cardiovasc_death_rate
+## 1         1.337       1803.987              NA               597.029
+## 2         1.337       1803.987              NA               597.029
+## 3         1.337       1803.987              NA               597.029
+## 4         1.337       1803.987              NA               597.029
+## 5         1.337       1803.987              NA               597.029
+## 6         1.337       1803.987              NA               597.029
+##   diabetes_prevalence female_smokers male_smokers handwashing_facilities
+## 1                9.59             NA           NA                 37.746
+## 2                9.59             NA           NA                 37.746
+## 3                9.59             NA           NA                 37.746
+## 4                9.59             NA           NA                 37.746
+## 5                9.59             NA           NA                 37.746
+## 6                9.59             NA           NA                 37.746
+##   hospital_beds_per_thousand life_expectancy human_development_index
+## 1                        0.5           64.83                   0.511
+## 2                        0.5           64.83                   0.511
+## 3                        0.5           64.83                   0.511
+## 4                        0.5           64.83                   0.511
+## 5                        0.5           64.83                   0.511
+## 6                        0.5           64.83                   0.511
+##   excess_mortality_cumulative_absolute excess_mortality_cumulative
+## 1                                   NA                          NA
+## 2                                   NA                          NA
+## 3                                   NA                          NA
+## 4                                   NA                          NA
+## 5                                   NA                          NA
+## 6                                   NA                          NA
+##   excess_mortality excess_mortality_cumulative_per_million
+## 1               NA                                      NA
+## 2               NA                                      NA
+## 3               NA                                      NA
+## 4               NA                                      NA
+## 5               NA                                      NA
+## 6               NA                                      NA</code></pre>
+<p>The dataset is clean and in wide format. Countries are contained in the <code>location</code> variable (with corresponding values for <code>iso_code</code> given), and we have daily values for quite a few variables including <code>new_cases</code> (we’ll use this to plot disease incidence), <code>new_cases_per_million</code>, <code>new_tests</code>, <code>total_vaccinations</code> and booster data is now available as <code>total_boosters</code>.</p>
+</div>
+<div id="analysis" class="section level2">
+<h2>Analysis</h2>
+<p>Let’s first plot disease incidence using the <code>new_cases</code> variable.</p>
+<pre class="r"><code>us_data = 
+  raw_data %&gt;% 
+  filter(location == &quot;United States&quot;) %&gt;% 
+  mutate(date = as.Date(date)) 
+
+ggplot(us_data, aes(x = date, y = new_cases)) +
+  geom_point()</code></pre>
+<p><img src="/blog/2022-01-30-comp-epi-curve_files/figure-html/new_cases%20plot-1.png" width="672" /></p>
+<p>It looks a little crazy, almost like there are several superimposed curves. What’s really happening is that we’re seeing a lot of noise from day-to-day fluctuation. Data aren’t reported uniformly, so it’s not uncommon to observe a “spike” in reports on, say, Mondays when reporting for the weekend is done.</p>
+<p>For this reason, we used smoothed data, usually amounting to a 7-day average. This technique allows us to eliminate the noise attributable to reporting fluctuations through the week. OWID gives us a smoothed version of <code>new_cases</code> which achieves just that.</p>
+<pre class="r"><code>us_plot = 
+  ggplot(us_data, aes(x = date, y = new_cases_smoothed)) +
+  geom_point() + 
+  labs(title = &quot;Covid-19 Incidence in the United States&quot;)
+
+us_plot</code></pre>
+<p><img src="/blog/2022-01-30-comp-epi-curve_files/figure-html/us%20plot-1.png" width="672" /></p>
+<p>Much better. Let’s now compare the US to a few other (arbitrarily chosen) countries. Here’s Peru.</p>
+<pre class="r"><code>peru_plot = 
+  raw_data %&gt;% 
+  filter(location == &quot;Peru&quot;) %&gt;% 
+  mutate(date = as.Date(date)) %&gt;% 
+  ggplot(aes(x = date, y = new_cases_smoothed)) +
+  geom_point() + 
+  labs(title = &quot;Covid-19 Incidence in Peru&quot;)
+
+peru_plot</code></pre>
+<p><img src="/blog/2022-01-30-comp-epi-curve_files/figure-html/peru-1.png" width="672" /></p>
+<p>And here’s Japan.</p>
+<pre class="r"><code>japan_plot = 
+  raw_data %&gt;% 
+  filter(location == &quot;Japan&quot;) %&gt;% 
+  mutate(date = as.Date(date)) %&gt;% 
+  ggplot(aes(x = date, y = new_cases_smoothed)) +
+  geom_point() + 
+  labs(title = &quot;Covid-19 Incidence in Japan&quot;)
+
+japan_plot</code></pre>
+<p><img src="/blog/2022-01-30-comp-epi-curve_files/figure-html/japan%20plot-1.png" width="672" /></p>
+<p>Here’s Australia.</p>
+<pre class="r"><code>aus_plot = 
+  raw_data %&gt;% 
+  filter(location == &quot;Australia&quot;) %&gt;% 
+  mutate(date = as.Date(date)) %&gt;% 
+  ggplot(aes(x = date, y = new_cases_smoothed)) +
+  geom_point() + 
+  labs(title = &quot;Covid-19 Incidence in Australia&quot;)
+
+aus_plot</code></pre>
+<p><img src="/blog/2022-01-30-comp-epi-curve_files/figure-html/australia%20plot-1.png" width="672" /></p>
+<p>Here’s Zimbabwe.</p>
+<pre class="r"><code>zimbabwe_plot = 
+  raw_data %&gt;% 
+  filter(location == &quot;Zimbabwe&quot;) %&gt;% 
+  mutate(date = as.Date(date)) %&gt;% 
+  ggplot(aes(x = date, y = new_cases_smoothed)) +
+  geom_point() + 
+  labs(title = &quot;Covid-19 Incidence in Zimbabwe&quot;)
+
+zimbabwe_plot</code></pre>
+<p><img src="/blog/2022-01-30-comp-epi-curve_files/figure-html/zimbabwe%20plot-1.png" width="672" /></p>
+<p>Finally, here’s Turkey.</p>
+<pre class="r"><code>turkey_plot = 
+  raw_data %&gt;% 
+  filter(location == &quot;Turkey&quot;) %&gt;% 
+  mutate(date = as.Date(date)) %&gt;% 
+  ggplot(aes(x = date, y = new_cases_smoothed)) +
+  geom_point() + 
+  labs(title = &quot;Covid-19 Incidence in Turkey&quot;)
+
+turkey_plot</code></pre>
+<p><img src="/blog/2022-01-30-comp-epi-curve_files/figure-html/turkey%20plot-1.png" width="672" /></p>
+<p>It’s evident that Omicron has a foothold all over the world, but to really compare the penetration we’ll need to scale the case loads to the population. Again, OWID gives us a variable where cases/population is already calculated: <code>new_cases_per_million</code> and <code>new_cases_smoothed_per_million</code>. We’ll used the smoothed version and combine the incidence of all six countries onto one plot.</p>
+<pre class="r"><code>combined_plot = 
+  raw_data %&gt;% 
+  filter(location %in% c(&quot;United States&quot;, &quot;Peru&quot;, &quot;Japan&quot;, &quot;Australia&quot;, &quot;Zimbabwe&quot;, &quot;Turkey&quot;)) %&gt;% 
+  mutate(date = as.Date(date)) %&gt;% 
+  ggplot(aes(x = date, y = new_cases_smoothed_per_million, group = location)) +
+  geom_line(aes(color = location))
+
+combined_plot</code></pre>
+<p><img src="/blog/2022-01-30-comp-epi-curve_files/figure-html/new%20cases%20per%20population%20combined-1.png" width="672" /></p>
+<p>Interestingly, Australia has had the highest Omicron peak, almost double that of the US. This is particularly unfortunate, given Australia’s <a href="https://www.aljazeera.com/news/2022/1/10/australia-to-push-through-omicron-as-total-cases-hit-1-million">ultra-high vaccination rate</a>.</p>
+<p>Now, having learned something, let’s polish up the curves.</p>
+<pre class="r"><code>final_plot = 
+  combined_plot +
+  labs(title = &quot;Covid-19 Incidence in Australia, Japan, Peru, Turkey, the United States, and Zimbabwe, Cases per Million, Smoothed 7-Day Average&quot;, 
+       x = &quot;Date&quot;, 
+       y = &quot;Cases per Million&quot;)
+
+final_plot + theme_minimal()</code></pre>
+<p><img src="/blog/2022-01-30-comp-epi-curve_files/figure-html/final%20plot-1.png" width="672" /></p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>While you can certainly just google Covid-19 in any country that interests you, getting to an accurate, scaled comparison between countries probably requires a bit more effort. Thankfully, Our World in Data and <code>ggplot2</code> make the task entirely painless.</p>
+</div>
