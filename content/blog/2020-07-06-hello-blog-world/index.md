@@ -1,6 +1,6 @@
 ---
 title: Hello (blog)world
-author: R package build
+author: Alice Tivarovsky
 date: '2020-07-06'
 slug: []
 categories:
@@ -9,8 +9,6 @@ categories:
 tags:
   - R
   - blog
-meta_img: image/image.png
-description: Description for the page.
 ---
 
 ## Why I created this blog

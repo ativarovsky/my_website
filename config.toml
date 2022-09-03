@@ -1,4 +1,4 @@
- baseurl = "/"
+baseurl = "/"
 title = "Alice Tivarovsky"
 author = "Alice Tivarovsky"
 canonifyurls = "yes"
@@ -23,6 +23,7 @@ posts_navigation = "yes"
 progressively = "no"
 twitter = "ativarovsky"
 uselatex = "yes"
+latestpostcount = 7
 
 [[menu.primary]]
 identifier = "about"
@@ -47,3 +48,17 @@ identifier = "Contact"
 name = "Contact"
 url = "/contact/"
 weight = 4
+
+[related]
+    threshold = 0 
+    includeNewer = true
+    toLower = false
+
+    [[related.indices]]
+        name = "tags"
+        weight = 100
+
+    [[related.indices]]
+        name = "date"
+        weight = 10
+        
