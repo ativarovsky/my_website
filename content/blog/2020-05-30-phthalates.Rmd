@@ -3,7 +3,6 @@ title: Phthalate Exposure in U.S. Women of Reproductive Age - an NHANES Review, 
 author: "alice"
 date: '2020-07-11'
 excerpt: ""
-layout: single
 htmlwidgets: true
 toc: true
 categories:
