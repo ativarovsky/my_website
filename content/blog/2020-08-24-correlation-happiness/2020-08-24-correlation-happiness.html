@@ -18,12 +18,9 @@ categories:
 <h2>Motivation</h2>
 <p>Although limited in its applications, in the right circumstances, correlation analysis can be a useful skill to have in your tool-box.</p>
 <p>Simply put, a correlation coefficient measures the strength of association between two variables. As we will see below, correlation coefficients come in several flavors, but they are all measured on the same scale, ranging from -1 to +1, where +1 means that that the variables are perfectly correlated in the same direction, -1 means they are perfectly correlated in opposite directions, and 0 means the two variables are completely independent (Schober, Boer, and Schwarte, 2018):</p>
-<figure>
-<img src="/static/image/correlation.png">
-<figcaption>
-picture taken from <a href= "https://saylordotorg.github.io/text_introductory-statistics/s14-02-the-linear-correlation-coeffic.html">Introductory Statistics</a>
-</figcaption>
-</figure>
+<p><img src="correlation.png" width="50%" style="display: block; margin: auto;" /></p>
+<p><img src="%22../static/image/correlation.png%22" />
+(image <a href="https://saylordotorg.github.io/text_introductory-statistics/s14-02-the-linear-correlation-coeffic.html">here</a>)</p>
 <p>Below, we will conduct correlation analyses using data from the <a href="https://worldhappiness.report">World Happiness Report</a>, an annual survey that seeks to quantify well-being and life satisfaction in over 150 countries. The survey uses a unique methodology to gauge happiness in respondents, and reports happiness, on average, per country, along with GDP, healthy life expectancy, and several subjective measures, including generosity, perceptions of government corruption, and self-perceived autonomy and social support. Using several correlation techniques, we will determine which variables are correlated with happiness around the world.</p>
 <p>We’ll be using data compiled from the <a href="https://worldhappiness.report">World Happiness Report</a>, publicly available as a <a href="https://www.kaggle.com/mathurinache/world-happiness-report">Kaggle dataset</a>.</p>
 </div>
@@ -107,7 +104,7 @@ library(ggcorrplot)</code></pre>
 <div id="data-import" class="section level4">
 <h4>Data Import</h4>
 <p>The Kaggle <a href="https://www.kaggle.com/mathurinache/world-happiness-report">dataset</a> loads in a zip file containing a separate .csv for every year from 2015 to 2020. We will use the 2020 data here.</p>
-<pre class="r"><code>happy_df = read.csv(file = &quot;./data/2020.csv&quot;) %&gt;% 
+<pre class="r"><code>happy_df = read.csv(file = &quot;../data/2020.csv&quot;) %&gt;% 
   janitor::clean_names() 
 
 head(happy_df)</code></pre>
@@ -576,7 +573,7 @@ head(happy_df)</code></pre>
 <p>Let’s first get a handle on how our data behave. Remember that to use Pearson, we need normally distributed variables and a linear relationship, and to use Spearman or Kendall, we need a monotonic relationship.</p>
 <p>To get a visual of all the individual relationships, we could generate scatter plots for each variable of interest vs the outcome of interest. This would be cumbersome. We’ll use the <code>chart.Correlation</code> function in the <code>PerformanceAnalytics</code> package instead. Spoiler alert: this can actually calculate all three correlation coefficients for you, but for now, just pretend you don’t see any of the numbers on the chart below.</p>
 <pre class="r"><code>chart.Correlation(happy_df[, c(3,8:12)], histogram = TRUE)</code></pre>
-<p><img src="/blog/2020-08-24-correlation-happiness_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p><img src="/blog/2020-08-24-correlation-happiness/2020-08-24-correlation-happiness_files/figure-html/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Our outcome, <code>ladder_score</code> is on the top left, and the left-most column provides the scatter plots for <code>ladder_score</code> against all five of the independent variables. The diagonal shows us a histogram for each variable, which helps us decide whether the variable is normally distributed or not.</p>
 <p>Looking at the diagonals, <code>ladder_score</code> is normally distributed and <code>healthy_life_expectancy</code> could maybe also pass (we’ll examine this more closely below). The other variables are clearly skewed.</p>
 <p>Looking at the scatter plots for <code>ladder_score</code> on the left-most column, <code>social_support</code>, <code>healthy_life_expectancy</code>, <code>freedom_to_make_life_choices</code> all appear linearly related to <code>ladder_score</code>. <code>generosity</code> is neither linear nor monotonic with respect to <code>ladder_score</code>, and <code>perceptions_of_corruption</code> is not linear but could pass for monotonic.</p>
@@ -836,16 +833,16 @@ rcorr(happy_df_corr, type = &quot;spearman&quot;)</code></pre>
 <h3>Visualizing Correlation</h3>
 <p>You may have noted that pretty much everything we learned from <code>cor</code>, <code>cor.test</code>, and <code>rcorr</code> could have been inferred from the <code>chart.Correlation</code> above. The only thing we need to change is to adjust the method from default to Spearman.</p>
 <pre class="r"><code>chart.Correlation(happy_df[, c(3,8:12)], histogram = TRUE, method = &quot;spearman&quot;)</code></pre>
-<p><img src="/blog/2020-08-24-correlation-happiness_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="/blog/2020-08-24-correlation-happiness/2020-08-24-correlation-happiness_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>As before, we see the linear and non-linear associations below the diagonal, the univariate distributions along the diagonal, and the actual Spearman coefficients above the diagonal. <code>chart.Correlation</code> even does this nice thing of making the font size proportional with the magnitude of the coefficent itself. Finally, it calculates a p-value and displays it as a star above the coefficient:p-values(0, 0.001, 0.01, 0.05, 0.1, 1) &lt;=&gt; symbols(“<em><strong>”, “</strong>”, “</em>”, “.”, ” “).</p>
 <p>There are other options for visualizing correlation matrices. <a href="http://www.sthda.com/english/wiki/visualize-correlation-matrix-using-correlogram"><code>corplot</code></a> and <a href="http://www.sthda.com/english/wiki/ggcorrplot-visualization-of-a-correlation-matrix-using-ggplot2"><code>ggcorrplot</code></a> are both great for generating customizable correlograms.
 You can explore a full gallery of <code>corplot</code> visualization options <a href="http://www.sthda.com/english/wiki/visualize-correlation-matrix-using-correlogram">here</a>, but we’ll make one nice one here <a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a>. Note, of course, that we’re not really interested in the entire chart. We just want <code>ladder_score</code> vs everything else.</p>
 <pre class="r"><code>cor_mat = cor(happy_df[, c(3,8:12)], method = &quot;spearman&quot;)
 corrplot(cor_mat)</code></pre>
-<p><img src="/blog/2020-08-24-correlation-happiness_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><img src="/blog/2020-08-24-correlation-happiness/2020-08-24-correlation-happiness_files/figure-html/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Big blue circles mean high correlation in the positive direction, and again, we see that social support and healthy life expectancy are most closely correlated with happiness. This <code>corplot</code> isn’t bad, but let’s eliminate the mirror image along the diagonal and change the label colors since red labels freak me out:</p>
 <pre class="r"><code>corrplot(cor_mat, type = &quot;upper&quot;, tl.col = &quot;black&quot;)</code></pre>
-<p><img src="/blog/2020-08-24-correlation-happiness_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><img src="/blog/2020-08-24-correlation-happiness/2020-08-24-correlation-happiness_files/figure-html/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Ok, that’s kind of better, but honestly it’s not really that useful in our context. If we were looking at many variables and wanted a quick way to assess which ones most closely went with which ones, <code>corplot</code> is a great visualization tool. For our purposes here, <code>cor</code> and <code>chart.Correlation</code> are just fine.</p>
 </div>
 </div>

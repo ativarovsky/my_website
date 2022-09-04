@@ -10,7 +10,7 @@ categories:
 ---
 
 ```{r global_options, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, fig.align = "center")
 ```
 
 ## Motivation
@@ -19,10 +19,11 @@ Although limited in its applications, in the right circumstances, correlation an
 
 Simply put, a correlation coefficient measures the strength of association between two variables. As we will see below, correlation coefficients come in several flavors, but they are all measured on the same scale, ranging from -1 to +1, where +1 means that that the variables are perfectly correlated in the same direction, -1 means they are perfectly correlated in opposite directions, and 0 means the two variables are completely independent (Schober, Boer, and Schwarte, 2018):
 
-<figure>
-    <img src="/static/image/correlation.png">
-    <figcaption>picture taken from <a href= "https://saylordotorg.github.io/text_introductory-statistics/s14-02-the-linear-correlation-coeffic.html">Introductory Statistics</a></figcaption>
-</figure> 
+```{r, echo=FALSE, out.width="50%"}
+knitr::include_graphics("correlation.png")
+```
+
+(image [here](https://saylordotorg.github.io/text_introductory-statistics/s14-02-the-linear-correlation-coeffic.html))
 
 Below, we will conduct correlation analyses using data from the [World Happiness Report](https://worldhappiness.report), an annual survey that seeks to quantify well-being and life satisfaction in over 150 countries. The survey uses a unique methodology to gauge happiness in respondents, and reports happiness, on average, per country, along with GDP, healthy life expectancy, and several subjective measures, including generosity, perceptions of government corruption, and self-perceived autonomy and social support. Using several correlation techniques, we will determine which variables are correlated with happiness around the world. 
 
@@ -140,7 +141,7 @@ library(ggcorrplot)
 The Kaggle [dataset](https://www.kaggle.com/mathurinache/world-happiness-report) loads in a zip file containing a separate .csv for every year from 2015 to 2020. We will use the 2020 data here. 
 
 ```{r import}
-happy_df = read.csv(file = "./data/2020.csv") %>% 
+happy_df = read.csv(file = "../data/2020.csv") %>% 
   janitor::clean_names() 
 
 head(happy_df)
