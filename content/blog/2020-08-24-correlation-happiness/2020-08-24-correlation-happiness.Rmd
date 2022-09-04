@@ -23,6 +23,7 @@ Simply put, a correlation coefficient measures the strength of association betwe
 knitr::include_graphics("correlation.png")
 ```
 
+
 (image [here](https://saylordotorg.github.io/text_introductory-statistics/s14-02-the-linear-correlation-coeffic.html))
 
 Below, we will conduct correlation analyses using data from the [World Happiness Report](https://worldhappiness.report), an annual survey that seeks to quantify well-being and life satisfaction in over 150 countries. The survey uses a unique methodology to gauge happiness in respondents, and reports happiness, on average, per country, along with GDP, healthy life expectancy, and several subjective measures, including generosity, perceptions of government corruption, and self-perceived autonomy and social support. Using several correlation techniques, we will determine which variables are correlated with happiness around the world. 
