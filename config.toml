@@ -19,10 +19,10 @@ highlightjs = true
 linkedin = "alicetivarovsky"
 logofile = "image/IMG_2421.png"
 pagetitle = "Alice Tivarovsky"
-posts_navigation = "yes"
-progressively = "no"
+posts_navigation = true
+progressively = false
 twitter = "ativarovsky"
-uselatex = "yes"
+uselatex = true
 latestpostcount = 7
 
 [[menu.primary]]
@@ -49,16 +49,3 @@ name = "Contact"
 url = "/contact/"
 weight = 4
 
-[related]
-    threshold = 0 
-    includeNewer = true
-    toLower = false
-
-    [[related.indices]]
-        name = "tags"
-        weight = 100
-
-    [[related.indices]]
-        name = "date"
-        weight = 10
-        
