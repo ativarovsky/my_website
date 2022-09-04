@@ -3,7 +3,7 @@ title: Correlation Analysis (Pearson, Spearman, and Kendall) using World Happine
 author: "alice"
 date: '2020-08-24'
 excerpt: "What factors are most closely correlated with nation-level happiness?"
-toc: true
+output: html_document
 categories:
   - correlation
   - mental health
