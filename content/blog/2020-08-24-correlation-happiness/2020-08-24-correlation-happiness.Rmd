@@ -3,10 +3,12 @@ title: Correlation Analysis (Pearson, Spearman, and Kendall) using World Happine
 author: "alice"
 date: '2020-08-24'
 excerpt: "What factors are most closely correlated with nation-level happiness?"
-output: html_document
+output:
+  blogdown::html_page
 categories:
   - correlation
   - mental health
+meta_img: blog/2020-08-24-correlation-happiness/correlation.jpg
 ---
 
 ```{r global_options, include = FALSE}
@@ -19,8 +21,12 @@ Although limited in its applications, in the right circumstances, correlation an
 
 Simply put, a correlation coefficient measures the strength of association between two variables. As we will see below, correlation coefficients come in several flavors, but they are all measured on the same scale, ranging from -1 to +1, where +1 means that that the variables are perfectly correlated in the same direction, -1 means they are perfectly correlated in opposite directions, and 0 means the two variables are completely independent (Schober, Boer, and Schwarte, 2018):
 
+![](correlation.jpg){width=100%}
+
+
+
 ```{r, echo=FALSE, out.width="50%"}
-knitr::include_graphics("correlation.png")
+knitr::include_graphics("correlation.jpg")
 ```
 
 
