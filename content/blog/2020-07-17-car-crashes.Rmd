@@ -226,10 +226,7 @@ Great, we wound up with a nice-looking boxplot with some useful information.
 
 Now let's take a look at a cousin of the boxplot: the violin plot. All you really need to know to understand how it works is shown in this figure, taken from another [TDS post](https://towardsdatascience.com/violin-plots-explained-fb1d115e023d).
 
-<figure>
-    <img src="/assets/images/violin.png">
-    <figcaption>Violin Plot</figcaption>
-</figure>
+![](/image/violin.png){width=50%}
 
 There was a time a few years back when everyone thought violin plots were the best thing since sliced bagels. The trend seems to have somewhat faded but I think they're nice so let's make one. 
 
