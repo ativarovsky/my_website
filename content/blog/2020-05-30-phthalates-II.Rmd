@@ -10,16 +10,15 @@ tags:
 
 # Motivation
 
-In <a href="../phthalates">Part I</a> of this post, we looked at what phthalates are, how humans interact with them, how much we have in our bodies, and how those levels have changed over time. 
+In [Part I](/blog/2020-05-30-phthalates) of this post, we looked at what phthalates are, how humans interact with them, how much we have in our bodies, and how those levels have changed over time. 
 
-Here, we'll attempt to answer Question 2: 
-* Are phthalate levels disproportionately distributed through the population? Namely, is there an association with phthalates and socioeconomic status? 
+Here, we'll attempt to answer Question 2: Are phthalate levels disproportionately distributed through the population? Namely, is there an association with phthalates and socioeconomic status? 
 
 For instance, do women with higher income have lower exposure to some/all phthalates. Or perhaps vice-versa? What about education? Why might this be the case? Well, it's possible that phthalates like MEP are present predominantly in inexpensive consumer products, thereby increasing risk for women who purchase them. And because manufacturers are not required to disclose usage of phthalates (as discussed in our historical interlude above), it's difficult to track them from the source. Understanding impacted groups gives us clues and insights into the mechanisms of action of these chemicals.  
 
 # Analysis
 
-We'll be using the same datasets we used in Part I, and we'll start here with the cleaned dataframe `all_data_c` (`_c` refers to creatinine-adjusted). Please refer back to <a href="../phthalates">Part I</a> if something doesn't make sense. 
+We'll be using the same datasets we used in Part I, and we'll start here with the cleaned dataframe `all_data_c` (`_c` refers to creatinine-adjusted). Please refer back to [Part I](/blog/2020-05-30-phthalates) if something doesn't make sense. 
 
 ```{r global_options, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
