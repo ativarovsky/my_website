@@ -16,7 +16,7 @@ email = "ativarovsky@gmail.com"
 faviconfile = "image/avatar.png"
 github = "ativarovsky"
 highlightjs = true
-linkedin = "alicetivarovsky"
+linkedin = "alicetivarovsky/"
 logofile = "image/IMG_2421.png"
 pagetitle = "Alice Tivarovsky"
 posts_navigation = true
@@ -37,4 +37,5 @@ name = "Blog"
 url = "/blog/"
 weight = 2
 
-
+[permalinks]
+    post = "/:year/:month/:day/:slug/"

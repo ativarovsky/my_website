@@ -1,0 +1,179 @@
+---
+title: Importing Data Files using `purrr` and `stringr`  
+author: "alice"
+date: '2020-09-05'
+toc: true
+tags:
+  - functions
+  - NHANES
+  - R
+---
+
+
+<div id="TOC">
+
+</div>
+
+<div id="motivation" class="section level2">
+<h2>Motivation</h2>
+<p>It’s a well-known <a href="https://en.wikipedia.org/wiki/Rule_of_three_(computer_programming)">tenet</a> of computer programming that if you have to copy and paste code more than twice, you should write a function.</p>
+<p>In my <a href="/blog/2020-05-30-phthalates">phthalates exposure projects</a>, I imported 21 text files for tidying and analysis. This is clearly a task well-suited for a function, but instead, I tediously copied and pasted code 21 times. Why? Honestly, I just didn’t have much experience writing functions and I was too eager to get data into R to actually sit down and figure out how to automate it.</p>
+<p>I knew, though, that one day, I’d sit down and figure out how to write that function. Today was that day.</p>
+<p>A few things to note:
+1. I’m working with two file types here, and neither one is in a common .csv format. I downloaded these files from <a href="https://wwwn.cdc.gov/nchs/nhanes/default.aspx">NHANES</a>, which plays nicely with SAS, but less nicely with R. Some of the raw data they provide is in .txt format and some of it is in the SAS-ready .xport format. I’m using the <code>read.xport</code> function in the <code>foreign</code> library to import both types, but the function can easily be extended to more common file types.
+2. The function below is specific to the situation, wherein the files are downloaded not only in .xport/.txt format, but they are named using the years first and survey type second. This led to error messages when I tried to save the imported dataframes using their original filenames (R doesn’t like objects named with numbers first), so I did some character re-shuffling using a few <code>stringr</code> functions. If your files are named more appropriately, you won’t need this feature.</p>
+</div>
+<div id="code" class="section level2">
+<h2>Code</h2>
+<p>As mentioned above, we’ll need the <code>foreign</code> library to read the xport files. We’ll also need <code>stringr</code> for some of the naming manipulations we’ll be doing within the function.</p>
+<pre class="r"><code>library(tidyverse)
+library(foreign)
+library(stringr)</code></pre>
+<p>First, we create a vector of filenames from the data folder and check its length.</p>
+<pre class="r"><code>files = list.files(&quot;./data/phthalates&quot;)
+files</code></pre>
+<pre><code>##  [1] &quot;2003_2004_DEMO_C.XPT&quot;       &quot;2003_2004_PHTHTE_C.XPT.txt&quot;
+##  [3] &quot;2005_2006_DEMO_D.XPT&quot;       &quot;2005_2006_PHTHTE_D.XPT.txt&quot;
+##  [5] &quot;2007_2008_DEMO_E.XPT&quot;       &quot;2007_2008_PHTHTE_E.XPT.txt&quot;
+##  [7] &quot;2009_2010_DEMO_F.XPT&quot;       &quot;2009_2010_PHTHTE_F.XPT.txt&quot;
+##  [9] &quot;2011_2012_DBQ_G.XPT.txt&quot;    &quot;2011_2012_DEMO_G.XPT.txt&quot;  
+## [11] &quot;2011_2012_EPH_G.XPT.txt&quot;    &quot;2011_2012_PHTHTE_G.XPT.txt&quot;
+## [13] &quot;2013_2014_DBQ_H.XPT.txt&quot;    &quot;2013_2014_DEMO_H.XPT.txt&quot;  
+## [15] &quot;2013_2014_EPHPP_H.XPT.txt&quot;  &quot;2013_2014_PHTHTE_H.XPT.txt&quot;
+## [17] &quot;2015_2016_ALB_CR_I.XPT.txt&quot; &quot;2015_2016_DBQ_I.XPT.txt&quot;   
+## [19] &quot;2015_2016_DEMO_I.XPT.txt&quot;   &quot;2015_2016_EPHPP_I.XPT.txt&quot; 
+## [21] &quot;2015_2016_PHTHTE_I.XPT.txt&quot;</code></pre>
+<pre class="r"><code>length(files)</code></pre>
+<pre><code>## [1] 21</code></pre>
+<p>Next, we write a function that does the following:
+1. Reads in a vector of names and concatenates it with the folder path, resulting in a vector of file path names called <code>y</code>
+2. Reads in the dataset represented by filepath <code>y</code>
+3. Removes the file extensions from y, since we’ll want these strings to name our imported dataframes
+4. Extracts the years, which originally come first in our filenames vector - otherwise, R will throw errors when we try to access the dataframes
+5. Rearranges the strings so that the years are at the end
+6. Stores the imported datasets, assigning a name using the resulting string from steps 3-5.</p>
+<pre class="r"><code>mult_import = function(x){
+  y = str_c(&quot;./data/phthalates/&quot;, x) 
+  z = as.data.frame(read.xport(y))
+  name_1 = str_replace_all(x, &quot;.txt|.XPT&quot;, &quot;&quot;)
+  years = str_sub(x, 1, 9)
+  name_2 = str_sub(name_1, 11, 20)
+  new_name = str_c(name_2, years, sep = &quot;_&quot;)
+  assign(new_name, z, envir = .GlobalEnv)
+}</code></pre>
+<p>Next, we use <code>purrr</code> to apply <code>mult_import</code> to our datafiles. And voila! We have 21 neat dataframes to work with. I’m only going to print 3 of them here (just to prove that it worked).</p>
+<pre class="r"><code>data_sets = map(files, mult_import)
+
+head(DEMO_C_2003_2004)</code></pre>
+<pre><code>##    SEQN SDDSRVYR RIDSTATR RIDEXMON RIAGENDR RIDAGEYR RIDAGEMN RIDAGEEX RIDRETH1
+## 1 21005        3        2        1        1       19      232      233        4
+## 2 21006        3        2        2        2       16      203      205        4
+## 3 21007        3        2        1        2       14      172      172        3
+## 4 21008        3        2        2        1       17      208      209        4
+## 5 21009        3        2        2        1       55      671      672        3
+## 6 21010        3        2        2        2       52      633      634        3
+##   RIDRETH2 DMQMILIT DMDBORN DMDCITZN DMDYRSUS DMDEDUC3 DMDEDUC2 DMDEDUC
+## 1        2        2       1        1       NA       11       NA       1
+## 2        2       NA       1        1       NA       11       NA       1
+## 3        1       NA       1        1       NA        8       NA       1
+## 4        2        2       1        1       NA       10       NA       1
+## 5        1        2       1        1       NA       NA        3       2
+## 6        1        2       1        1       NA       NA        4       3
+##   DMDSCHOL DMDMARTL DMDHHSIZ INDHHINC INDFMINC INDFMPIR RIDEXPRG DMDHRGND
+## 1        1        5        2        6        6     2.44       NA        1
+## 2        2        5        6        7        6     2.47        1        2
+## 3        1        5        5       NA        6     1.60        2        1
+## 4        1        5        7       11        7     2.75       NA        2
+## 5       NA        1        2        8        8     3.79       NA        1
+## 6       NA        6        3        6        4     1.24        2        1
+##   DMDHRAGE DMDHRBRN DMDHREDU DMDHRMAR DMDHSEDU SIALANG SIAPROXY SIAINTRP
+## 1       39        1        5        3       NA       1        2        2
+## 2       27        1        2        5       NA       1        2        2
+## 3       39        1        4       NA       NA       1        1        2
+## 4       40        1        4        5       NA       1        2        2
+## 5       55        1        3        1        4       1        2        2
+## 6       54        1        1        6       NA       1        2        2
+##   FIALANG FIAPROXY FIAINTRP MIALANG MIAPROXY MIAINTRP AIALANG  WTINT2YR
+## 1       1        2        2       1        2        2       1  5512.321
+## 2       1        2        2       1        2        2       1  5422.140
+## 3       1        2        2       1        2        2       1 39764.177
+## 4       1        2        2       1        2        2       1  5599.499
+## 5       1        2        2       1        2        2       1 97593.679
+## 6       1        2        2       1        2        2       1 39599.363
+##    WTMEC2YR SDMVPSU SDMVSTRA
+## 1  5824.782       2       39
+## 2  5564.040       1       41
+## 3 40591.066       2       35
+## 4  5696.751       1       32
+## 5 97731.727       2       31
+## 6 43286.576       1       29</code></pre>
+<pre class="r"><code>head(DBQ_G_2011_2012)</code></pre>
+<pre><code>##    SEQN DBQ010 DBD030 DBD041 DBD050 DBD055 DBD061 DBQ073A DBQ073B DBQ073C
+## 1 62161     NA     NA     NA     NA     NA     NA      NA      NA      NA
+## 2 62162      1    121      1    365    243    365      10      NA      NA
+## 3 62163     NA     NA     NA     NA     NA     NA      NA      NA      NA
+## 4 62164     NA     NA     NA     NA     NA     NA      NA      NA      NA
+## 5 62165     NA     NA     NA     NA     NA     NA      NA      NA      NA
+## 6 62166     NA     NA     NA     NA     NA     NA      NA      NA      NA
+##   DBQ073D DBQ073E DBQ073U DBQ700 DBQ197 DBQ223A DBQ223B DBQ223C DBQ223D DBQ223E
+## 1      NA      NA      NA      2      3      NA      NA      NA      13      NA
+## 2      NA      NA      NA     NA      3      10      NA      NA      NA      NA
+## 3      NA      NA      NA     NA      3      NA      NA      NA      13      NA
+## 4      NA      NA      NA      1      0      NA      NA      NA      NA      NA
+## 5      NA      NA      NA     NA      3      10      NA      NA      NA      NA
+## 6      NA      NA      NA     NA      3      NA      NA      12      NA      NA
+##   DBQ223U DBQ229 DBQ235A DBQ235B DBQ235C DBQ301 DBQ330 DBQ360 DBQ370 DBD381
+## 1      NA      1       3       3       3     NA     NA     NA     NA     NA
+## 2      NA     NA      NA      NA      NA     NA     NA     NA     NA     NA
+## 3      NA     NA      NA      NA      NA     NA     NA      1      1      5
+## 4      NA      2      NA      NA      NA     NA     NA     NA     NA     NA
+## 5      NA     NA      NA      NA      NA     NA     NA      1      1      5
+## 6      NA     NA      NA      NA      NA     NA     NA      1      1      5
+##   DBQ390 DBQ400 DBD411 DBQ421 DBQ424 DBD895 DBD900 DBD905 DBD910 CBQ595 CBQ600
+## 1     NA     NA     NA     NA     NA      2      2      0      0      2      2
+## 2     NA     NA     NA     NA     NA      0     NA      0      1     NA     NA
+## 3      3      1      0     NA     NA      0     NA      0      2     NA     NA
+## 4     NA     NA     NA     NA     NA      3      0      0      0      1     NA
+## 5      1      1      5      1      3      2      2      5      3     NA     NA
+## 6      3      2     NA     NA     NA      1      0      2      2     NA     NA
+##   CBQ605 CBQ610
+## 1     NA     NA
+## 2     NA     NA
+## 3     NA     NA
+## 4      2      2
+## 5     NA     NA
+## 6     NA     NA</code></pre>
+<pre class="r"><code>head(PHTHTE_C_2003_2004)</code></pre>
+<pre><code>##    SEQN  WTSB2YR URXMBP URDMBPLC URXMCP URDMCPLC  URXMEP URDMEPLC URXMHP
+## 1 21006 15983.73  375.6        0 0.2843        1 221.232        0    3.2
+## 2 21013 20984.80   86.7        0 0.2843        1 306.702        0   33.8
+## 3 21015 64191.40   12.6        0 0.2843        1 154.110        0    0.6
+## 4 21016 23989.44   62.7        0 1.2060        0 132.528        0   10.6
+## 5 21023 17565.95  206.1        0 0.2843        1 199.716        0   21.7
+## 6 21026 18145.07  135.8        0 0.2843        1 108.966        0    2.5
+##   URDMHPLC URXMNP URDMNPLC URXMOP URDMOPLC URXMZP URDMZPLC URXMNM URDMNMLC
+## 1        0 1.0889        1 1.1879        1 17.784        0    5.4        0
+## 2        0 1.0889        1 1.1879        1 40.464        0   23.8        0
+## 3        1 1.0889        1 1.1879        1  2.880        0    3.6        0
+## 4        0 1.0889        1 1.1879        1 49.392        0    8.0        0
+## 5        0 1.0889        1 1.1879        1 15.984        0    3.2        0
+## 6        0 1.0889        1 1.1879        1  9.720        0    5.6        0
+##   URXMC1 URDMC1LC URXMHH URDMHHLC URXMOH URDMOHLC URXMIB URDMIBLC URXECP
+## 1    4.1        0   21.7        0   16.9        0   52.8        0   22.8
+## 2    7.9        0  351.7        0  210.5        0   47.4        0  472.8
+## 3    2.0        0    9.1        0    7.4        0    3.4        0   13.6
+## 4    6.1        0   57.8        0   33.9        0   21.7        0   48.3
+## 5    7.6        0  176.4        0  115.8        0   22.4        0  257.2
+## 6    4.6        0   71.7        0   44.0        0    5.1        0   87.9
+##   URDECPLC URXUCR
+## 1        0    289
+## 2        0    302
+## 3        0     98
+## 4        0    200
+## 5        0    213
+## 6        0    185</code></pre>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>Writing these 10 lines of code required some time and trial and error. Certainly, copy/pasting code and modifying snippets would have been faster. But that’s a lesson learned in the process of automation in code, which usually follows the so-called <a href="https://www.jimcollins.com/concepts/the-flywheel.html">flywheel effect</a>. It might take some effort to get the thing spinning, but once it picks up enough momentum, you get smooth movement with minimal additional input.</p>
+</div>
