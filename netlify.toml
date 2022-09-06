@@ -15,7 +15,7 @@ HUGO_ENV = "production"
 
 [[redirects]]
   from = "https://ativarovsky.github.io/"
-  to = "https://www.alicetivarovsky.com/"
+  to = "/blog"
   status = 301
   force = false
   query = {path = ":path"}
