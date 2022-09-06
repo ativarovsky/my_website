@@ -49,11 +49,9 @@ meta_img: blog/2020-08-24-correlation-happiness/correlation.jpg
 </div>
 <div id="spearmans-rho-aka-spearmans-rank-correlation-coefficient" class="section level4">
 <h4><em>Spearman’s Rho (aka Spearman’s Rank Correlation Coefficient)</em></h4>
-<p>In contrast to Pearson’s rho, Spearman’s rho [] is a non-parametric statistic, meaning it can be applied to non normally-distributed data (Puth, Neuhäuser, &amp; Ruxton, 2015).</p>
+<p>In contrast to Pearson’s rho, Spearman’s rho is a non-parametric statistic, meaning it can be applied to non normally-distributed data (Puth, Neuhäuser, &amp; Ruxton, 2015).</p>
 <p>Spearman’s coefficient also does not stipulate that the two variables must be linearly correlated - rather, they must have a <strong>monotonic</strong> relationship, meaning that when one variable increases, so does the other (not necessarily in a linear fashion.)<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> This picture is all you need to understand monotonicity:</p>
-<figure>
-<img src="/assets/images/monotonic.png">
-</figure>
+<p><img src="/image/monotonic.png" style="width:100.0%" /></p>
 <p>Finally, Spearman’s coefficient does not require that the variables be continuous, so you can use categorical variables, as long as they are ordinal.</p>
 <p>The trade-off for this flexibility is that the Spearman coefficient is slightly less interpretable. Essentially, we are not measuring the direct correlation using our exact data values. Instead, we are correlating the <strong>rank</strong> of each value within one variable to the <em>rank</em> of each value in another.</p>
 <p>For example, here are the top 6 values of the <code>healthy_life_expectancy</code> vector:</p>

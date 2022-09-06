@@ -10,7 +10,7 @@ hasCJKLanguage = "yes"
 ignoreFiles = [ "\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$" ]
 
 [params]
-copyright = "© Alice Tivarovsky"
+copyright = "© 2022 Alice Tivarovsky"
 copyrightUrl = "/"
 email = "ativarovsky@gmail.com"
 faviconfile = "image/avatar.png"
@@ -37,15 +37,4 @@ name = "Blog"
 url = "/blog/"
 weight = 2
 
-[[menu.primary]]
-identifier = "projects"
-name = "Projects"
-url = "/projects/"
-weight = 3
-
-[[menu.primary]]
-identifier = "Contact"
-name = "Contact"
-url = "/contact/"
-weight = 4
 

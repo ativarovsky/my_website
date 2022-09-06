@@ -63,13 +63,12 @@ $$ r_{xy} = \frac {\Sigma_{i=1}^n (x_i - \bar x)(y_i - \bar y)} { \sqrt{\Sigma_{
 
 #### _Spearman's Rho (aka Spearman's Rank Correlation Coefficient)_
 
-In contrast to Pearson's rho, Spearman's rho [\rho] is a non-parametric statistic, meaning it can be applied to non normally-distributed data (Puth, Neuhäuser, & Ruxton, 2015). 
+In contrast to Pearson's rho, Spearman's rho is a non-parametric statistic, meaning it can be applied to non normally-distributed data (Puth, Neuhäuser, & Ruxton, 2015). 
 
 Spearman's coefficient also does not stipulate that the two variables must be linearly correlated - rather, they must have a __monotonic__ relationship, meaning that when one variable increases, so does the other (not necessarily in a linear fashion.)[^1] This picture is all you need to understand monotonicity: 
 
-<figure>
-    <img src="/assets/images/monotonic.png">
-</figure>
+![](/image/monotonic.png){width=100%}
+
 
 Finally, Spearman's coefficient does not require that the variables be continuous, so you can use categorical variables, as long as they are ordinal.
 
