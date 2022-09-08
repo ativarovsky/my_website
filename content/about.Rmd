@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-Below is a snapshot of my career thus far. My journey to public health has been, shall we say, non-linear. But good stories always have some plot twists and turns. Today, I feel fortunate to work in a highly visible field, where I get to play with data, help policy-makers make decisions, and ultimately leave a positive impact on my community. 
+Below is a snapshot of my career thus far. My journey to public health has been, shall we say, non-linear. But good stories always have some plot twists and turns. Today, I feel fortunate to work in a highly visible field, where I get to play with data, help policy-makers make decisions, and, with hope, leave a positive impact in the community. 
 
 For more details, please see my [résumé](/pdf/Alice Tivarovsky Resume AUG 2022.pdf) and find me on [LinkedIn](https://www.linkedin.com/in/alice-tivarovsky-56281131/). 
 
@@ -33,7 +33,7 @@ For more details, please see my [résumé](/pdf/Alice Tivarovsky Resume AUG 2022
 - Investigated and supported containment of Covid-19 outbreaks in Los Angeles County universities  
 
 #### Sep 2019 - May 2020 | Lead Teaching Assistant | Columbia University Mailman School of Public Health
--	Developed lecture materials, homework assignments, and exams with faculty support for Quantitative Research Methods and Applications (Fall 2019) and Categorical Data Analysis (Spring 2020)
+-	Supported faculty in developing lecture materials, homework assignments, and exams for Quantitative Research Methods and Applications (Fall 2019) and Categorical Data Analysis (Spring 2020) courses
 -	Led team of 20 teaching assistants to deploy all logistical course details
 -	Handled all course communications to a class of over 450 students
 -	Built and maintained course websites

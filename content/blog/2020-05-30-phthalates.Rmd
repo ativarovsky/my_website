@@ -2,10 +2,12 @@
 title: Phthalate Exposure in U.S. Women of Reproductive Age - an NHANES Review, Part I 
 author: "alice"
 date: '2020-07-11'
-excerpt: ""
 htmlwidgets: true
 toc: true
 categories:
+  - Environment
+  - NHANES
+tags: 
   - Environment
   - NHANES
 ---

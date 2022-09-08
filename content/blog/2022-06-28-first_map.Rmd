@@ -1,0 +1,180 @@
+---
+title: "Making Maps with R - Part I"
+author: "Alice Tivarovsky"
+date: "06/25/2022"
+toc: true
+categories:
+  - geospatial data
+  - data visualization
+  - public health
+---
+
+Notes: 
+- potential data source: https://data.cdc.gov/Environmental-Health-Toxicology/Daily-PM2-5-Concentrations-All-County-2001-2016/7vdq-ztk9
+- use this to download and unzip
+- 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Motivation
+
+These days, it seems like there is an ever-growing list of massive, complicated issues to worry about - between climate change, nuclear war, mega-droughts, wildfires. Reading the news feels like an exercise in adding to that list. 
+
+But sometimes, the news gives us a bright spot. My home state of California - a place, which was once home to some of the worst air pollution in the world, recently passed a [resolution](https://www.reuters.com/business/autos-transportation/tesla-says-california-should-toughen-ev-requirements-2022-08-25/) to eliminate gasoline-powered cars by 2035. I was modestly excited by this news, but I was more interested in the current situation. Since I don't think about air pollution all that much, I ended up in a rabbit-hole of unstructured research. How bad is air pollution now? How does my state, city, and county compare to others in the US? Is air pollution getting better or worse? 
+
+I will attempt to answer some of those questions below. Of course, others have already done that, and probably in a more compelling manner. But going through the process myself was fun, and if you want to learn a bit about geospatial data and `leaflet`, I think an exercise like this is ideal. 
+
+So lets dive in. 
+
+- Leaflet walktrough, show how to map health data
+- The definitive guide to R `leaflet` is found [here](https://rstudio.github.io/leaflet/)
+
+Other stuff: 
+Globally, [over 6 million](https://ourworldindata.org/air-pollution) people die each year as a result of air pollution. It's not something we think much about in the United States or other parts of the developed world (aside from, maybe, complaining about the [smog in Los Angeles](https://www.latimes.com/local/la-me-air-pollution-0428-pictures-photogallery.html)), but it's a leading cause of death in parts of Africa and Asia. And unfortunately, it seems to be getting worse in other parts of the world.  
+
+Although [progress](https://ourworldindata.org/grapher/death-rates-from-air-pollution) has been made through better policy and environmental regulation, this magnitude of premature deaths should surely attract more attention than it does now. [Some](https://www.bloomberg.com/opinion/articles/2021-03-10/air-pollution-kills-far-more-people-than-covid-ever-will#xj4y7vzkg) have posed plausible reasons for the public's lack of interest (mainly that it's an "over there" problem). [Others](https://www.thelancet.com/journals/lanplh/article/PIIS2542-5196(22)00090-0/fulltext) have scolded countries for not doing more to protect public health. 
+
+- spatial data = two types
+  - raster aka bitmap: grid of pixels in various colors (eg a jpeg or gif)
+  - vector: composed of paths, no pixels, smoother
+
+- explain PM 2.5
+
+
+```{r libraries}
+
+library(tidyverse)
+library(readxl)
+library(leaflet)
+library(rgdal) # Geospatial data abstraction library
+library(stats)
+
+```
+
+
+## Data
+
+In the United States, the EPA maintains tens of thousands of outdoor air quality monitors and provides data to the public through several sources, including the AirData [website](https://www.epa.gov/outdoor-air-quality-data). First, we'll practice mapping skills by pinning all these  monitors on a map. The geo-locations for all active monitors were downloaded [here](https://aqs.epa.gov/aqsweb/airdata/download_files.html#Meta). We read in the data, call `leaflet`, add tiles, and center on a point in the middle of the country. 
+
+As someone not well-versed in environmental pollutants, figuring out what dataset and which measures to use was a bit complicated. I decided to look at a few: annual median AQI by county and... I'll be comparing 2021 data to 2013. I didn't choose 2013 for any particular reason, other than the fact that it was a mostly un-eventful year in my life. 
+
+
+```{r load data}
+sites <- read.csv("../data/maps/aqs_sites 3.csv", header = TRUE)
+
+# annual 'concentration by monitor' dataset for 2022 
+full_2021 <- 
+  read.csv("../data/maps/annual_aqi_by_county_2021.csv", header = TRUE) %>% 
+  janitor::clean_names()
+
+full_2013 <- 
+  read.csv("../data/maps/annual_aqi_by_county_2013.csv", header = TRUE) %>% 
+  janitor::clean_names()
+  
+
+```
+
+## Analysis
+
+Ok, let's make some maps. First, let's call `leaflet` and see what happens. 
+```{r}
+
+leaflet() %>% 
+    setView(lng = -95, lat = 40, zoom = 4)  %>% 
+    addTiles() 
+
+```
+
+Now, we'll pass the sites object (EPA refers to the location monitors as sites) to leaflet and visualize them as markers on the map. 
+```{r site circle markers}
+
+leaflet(sites) %>% 
+  setView(lng = -95, lat = 40, zoom = 4)  %>% 
+  addTiles() %>% 
+  addCircleMarkers(lat = ~Latitude, 
+                   lng = ~Longitude, 
+                   radius = 1)
+
+```
+
+Most states look like blue blobs, but we can zoom in and find the ones in our neighborhood (unless, of course, we live in the middle of Nevada). 
+
+Now let's get a sense of what those monitors are measuring.There are probably many ways to do this - one way might be to color the marker representing each monitor in accordance with the level of pollution it measured for some time interval. But given the high concentration of dots, it might be hard to read. Instead, let's try to divide the United States by county lines. 
+
+To do this, we'll need county shapefiles, which will comprise a layer on top of the bare leaflet map. The intent of this approach is to mimic what the Washington Post used in this 2019 [article](https://www.washingtonpost.com/business/2019/10/23/air-pollution-is-getting-worse-data-show-more-people-are-dying/), where it reported an excess of 10,000 deaths due to air pollution over a 2-year period. 
+
+Let's start with a subset of states, just to play around and get a feel for how it works. Note that the shapefiles refer to states and counties by their Federal Information Processing System (FIPS) codes, but it's easy to look up [conversions](https://transition.fcc.gov/oet/info/maps/census/fips/fips.txt). 
+
+```{r shapefiles}
+
+# Source for shapefiles
+counties <- 
+  readOGR("tl_2021_us_county", layer = "tl_2021_us_county", GDAL1_integer64_policy = TRUE)
+
+some_states <- subset(counties, counties$STATEFP %in% c('06', '39', '40'))
+
+leaflet(some_states) %>% 
+  setView(lng = -95, lat = 40, zoom = 4)  %>% 
+  addTiles() %>% 
+  addPolygons(weight = 0.1, smoothFactor = 0.5,  opacity = 1.0, fillOpacity = 0.2)
+
+```
+
+The shapefiles are working well - we can see well-defined state and county borders. But this isn't that interesting. What we want is a map like the one above, but the counties should be color-coded according to the value of the selected parameter - in our case, the median annual AQI. In map-speak, this is called a chloropleth, and in order to make one, we need to give `leaflet` the following things: 
+* A color palette
+* A numeric vector defining "bins" (i.e cutoff points at which one color in the palette will change to the next)
+
+Since we don't yet know the range of values for median AQI, let's run some descriptive statistics on it.  
+
+```{r look at median AQI}
+
+# 2013 data
+range(full_2013$median_aqi)
+quantile(full_2013$median_aqi)
+
+# 2021 data
+range(full_2021$median_aqi)
+quantile(full_2021$median_aqi)
+
+
+```
+
+Already see that 2021 maximum is much higher than 2013. But we now have a general sense of the spread of AQI and we can assigns bins. 
+
+```{r chloropleth}
+bins <- c(0, 20, 40, 60, 80, 100, 120, 140)
+pal <- colorBin("OrRd", domain = full_2013$median_aqi, bins = bins)
+
+```
+
+And now, we get to the trickiest part of the process. We need to combine the shapefile object `counties` with the 2013 and 2021 air pollution datasets stored in `full_2013` and `full_2021`. This seems impossible since we're combining a geospatial object with a standard dataset, but it turns out to be pretty simple. 
+
+```{r}
+
+full_2013_1 <- 
+  full_2013 %>% 
+  select(county, median_aqi) %>% 
+  rename("NAME" = county)
+
+counties <- merge(counties, full_2013_1, by = "NAME", duplicateGeoms = TRUE)
+
+
+leaflet(counties) %>% 
+  setView(lng = -95, lat = 40, zoom = 4)  %>% 
+  addTiles() %>% 
+  addPolygons(weight = 0.1, smoothFactor = 0.5,  opacity = 1.0, fillOpacity = 0.2, fillColor = ~pal(counties$median_aqi))
+
+
+```
+
+
+## Conclusion
+
+
+## References
+
+- https://sesync-ci.github.io/maps-in-R-lesson/2016/09/14/#/slides/shinyleaflet
+- https://aqs.epa.gov/aqsweb/airdata/download_files.html#Annual (Air Quality datasets); used Annual Concentration by Monitor
+

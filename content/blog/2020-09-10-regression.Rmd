@@ -40,7 +40,7 @@ theme_set(theme_bw())
 
 ### Data Import and Tidy
  
-Reading in and having a quick look at the [dataset](https://www.kaggle.com/kumarajarshi/life-expectancy-who): 
+Reading in and having a quick look at the dataset:
 ```{r import}
 lifexp_df <- 
   read.csv(file = "./data/who_life_expectancy.csv") %>% 
@@ -51,6 +51,7 @@ glimpse(lifexp_df)
 skim(lifexp_df)
 
 ```
+<br>
 The dataset contains 2938 rows, spanning 22 variables. Every row represents a country and year combination - a total of 193 unique countries for every year from 2000 to 2015. We'll limit the analysis to one year since having the same country repeated as a new row constitutes a repeated measure, which requires more sophisticated analysis than what we're doing here. I'm going to (arbitrarily) choose 2012. 
 
 We also notice from the `glimpse()` output that we have quite a few missing values, so we'll need to drop them from our analysis. 
@@ -86,7 +87,7 @@ final_df %>%
 
 ```
 
-We have a pretty linear relationship with potentially some heteroscedasticity, which we'll talk about in the assumptions<a href = "#step-3:-validate-regression-assumptions">section</a> below. We're going to ask R to fit a line through these data points and then we'll break down how R came up with this line. 
+We have a pretty linear relationship with potentially some heteroscedasticity, which we'll talk about in the assumptions section below. We're going to ask R to fit a line through these data points and then we'll break down how R came up with this line. 
 ```{r}
 model_1 <-
   lm(data = final_df, life_expectancy ~ schooling)
@@ -97,10 +98,10 @@ summary(model_1)
 The coefficients, also known as the "beta" terms, are our regression parameters: the intercept, \\(b_0 \\), estimated as 41.821 years, represents the average life expectancy in a theoretical nation where the average years of schooling was 0. This value is meaningless because there are no nations with this average education level and to interpret a regression line beyond the scope of the data that generated it is an epic no-no of cardinal sin magnitude. The slope, \\(b_1 \\), is estimated as 2.293, and represents the rate of change in life expectancy per additional year of schooling, give or take an error term, \\(\epsilon_i \\). So on average, countries with one additional year of schooling add 2.293 years their average life expectancy. 
 
 Thus, from the "true" population model: 
-\\[y_i = \beta_0 + \beta*x_i + \epsilon_i \\]
+$$ y_i = \beta_0 + \beta*x_i + \epsilon_i $$
 
 we get our fitted model:
-\\[y = 41.821 + 2.293*x  \\]
+$$ y = 41.821 + 2.293*x  $$
 
 Note that the F-statistic has a very small p-value  (F = 302.1 on 1 and 171 DF,  p-value: < 2.2e-16). This means that our model is statistically significant. But since we only have one predictor term, the statistical significance of the model is same as the significance of the predictor term,`schooling` in this model.  
 
@@ -115,6 +116,7 @@ final_df %>%
   )
 
 ```
+
 We want to look closely at the distances between the datapoints and the line. Unfortunately, `lm()` doesn't give us a dataframe output we can work with. This is where the `broom` package comes in handy. Specifically, the `augment()` function within `broom` allows us to build a dataframe with all kinds of useful information:
 
 ```{r}
@@ -125,7 +127,8 @@ model_1_df
 ```
 
 The critical column here is the __residuals__ vector, `.resid`, i.e. the vertical distances between the observed points and the fitted line. These values form the basis of regression modeling. To formalize, the residual (also known as the error term) is given as: 
-\\[ \epsilon_i = Y_i - \hat{Y_i} \\], 
+$$ \epsilon_i = Y_i - \hat{Y_i} $$ 
+
 where the little hat on the Y indicates that it's the model estimate, meaning the y-value of the point on the blue line. 
 
 If we were to look at just the data points, close one eye, and draw a line through them, we'd probably come with something close to the blue line R gave us. But while we would be using the complex machinery of our brain's pattern-recognition capacity, the actual math behind the blue line is fairly straightforward. It all comes down to finding a line that optimizes these residuals. In fact, when we say "least squares", we're referring to minimizing the squares of these values. Let's visualize them here using `geom_segment()`: 
@@ -141,6 +144,7 @@ model_1_df %>%
   )
 
 ```
+<br>
 The red lines are the residuals and the way R computes the fitted model is by minimizing the squares of these red lines. The residuals  are squared to avoid cancellation when adding positive and negative values. 
 
 #### OLS - Multi-variable Modeling
@@ -171,7 +175,8 @@ summary(model_2)
 Again, the p-value on our F-statistic is significant, meaning that there is a statistically significant relationship between the outcome and the combination of predictors. 
 
 Our new model statement is: 
-\\[ life\,expectancy = 45.4937 + 2.1420*schooling - 2.1010*status \\]
+
+$$ life_expectancy = 45.4937 + 2.1420*schooling - 2.1010*status $$
 
 where the coefficient of the `status` variable indicates that, on average, after we control for schooling, there is a difference in life expectancy of 2.1 years between developing and developed countries. However, note that the p-value for the status predictor is 0.08 (p > 0.05), meaning that controlling for education, status is __not__ a significant predictor of life expectancy. This does not mean that status __alone__ is not a significant predictor of life expectancy. It just means that after we control for education by putting it in the model, the effect of status mostly washes away. 
 
@@ -194,6 +199,7 @@ final_df %>%
   )
 
 ```
+
 What the p-value for status in `model_2` __does__ tell us is that the relationship between schooling and life expectancy does not change significantly between developed and developing countries. Again, to visualize: 
 
 ```{r}
@@ -202,6 +208,7 @@ final_df %>%
   geom_point(aes(color = status))
 
 ```
+
 The point is that even though we have two distinct clusters, the regression line is more or less the same between them. 
 
 For our purposes, we're going to take all of this to mean that we should get rid of the `status` term in our model. This is not to say that all predictors with p-values < 0.05 don't belong in your model. We're not going to go down that rabbit hole, but you can find people arguing the matter at length on [stackexchange](https://stackexchange.com/). This is just a decision I'm making based on the evidence.  
@@ -216,7 +223,7 @@ However, it's clear that simply fitting a linear model is not enough. While ther
 
 First, let's look at perhaps the most common model diagnostic, \\(R^2\\), or, more formally, the coefficient of determination. For a single-variable model, \\(R^2\\), is just the square of our friend, the Pearson correlation coefficient. It turns out that this is actually a much more useful quantity:  
 
-\\[ R^2 = \frac {\Sigma_{i=1}^n (y_i - \hat y_i)^2} {\Sigma_{i=1}^n (y_i - \bar y_i)^2} \\]
+$$ R^2 = \frac {\Sigma_{i=1}^n (y_i - \hat y_i)^2} {\Sigma_{i=1}^n (y_i - \bar y_i)^2} $$
 
 \\( R^2 \\) is powerful because it's completely intuitive - it equals the percentage of variance in the outcome explained by the predictor(s). This is part of the `summary()` output:
 
@@ -228,7 +235,8 @@ summary(model_1)
 For the single-variable model, \\( R^2 = 0.6386 \\), so 63.86% of the variance in a nation's life expectancy can be explained by its linear relationship to education. For a single variable model, this is a pretty high \\( R^2 \\). Note that when we fit `model_2`, the \\( R^2 \\) only went up to 64.48%, all while taking away a degree of freedom from the model - further evidence that `status` is not a worthwhile predictor in this context. 
 
 To quantify the model's error, which, again, comes down to residuals, we can look at Root Mean Square Error (__RMSE__), another highly common regression diagnostic. It is defined as:
-\\[ RMSE = \sqrt \frac {\Sigma_{i=1}^n (\hat y_i - y_i)^2}  {n}\\]
+
+$$ RMSE = \sqrt \frac {\Sigma_{i=1}^n (\hat y_i - y_i)^2}  {n} $$
 
 and as you might intuit from the formula, RMSE is a measure of the standard deviation of residuals. RMSE can be computed using the `metrics` package, or just using a quick manual calculation:
 ```{r}
@@ -250,6 +258,7 @@ model_1_df %>%
   head()
 
 ```
+
 We can see that our top five most influential observations are Eritrea, Niger, Sierra Leone, Bangladesh, and Lesotho. To complement using a quick visualization: 
 ```{r}
 model_1_df %>% 
@@ -259,10 +268,10 @@ model_1_df %>%
   theme_bw()
 
 ```
+
 We see three points (Eritrea, Niger, Sierra Leone) that stand out from the pack. These observations are not just outliers, but __influential outliers__, meaning they swayed our model towards themselves, compromising its predictive capability. 
 
-So what do we do with them? You can find lots of different "rules of thumb" online, dictating which Cook's distance might prompt removal of a data point from your set, but what makes most sense to me in this situation is to accept the data as they are. We don't have any super high leverage points here, and even if we did, we would need justification for removing them. As you can probably intuit, few natural processes are simple enough to be accurately explained by a linear model. Hence the discovery/invention of more sophisticated probabilistic models and machine learning. But suffice it to say, we're leaving Eritrea [where it is](https://en.wikipedia.org/wiki/Eritrea). 
-
+So what do we do with them? You can find lots of different "rules of thumb" online, dictating which Cook's distance might prompt removal of a data point from your set, but what makes most sense to me in this situation is to accept the data as they are. We don't have any super high leverage points here, and even if we did, we would need justification for removing them. As you can probably intuit, few natural processes are simple enough to be accurately explained by a linear model. Hence the discovery/invention of more sophisticated probabilistic models and machine learning.
 
 ### Step 3: Validate Regression Assumptions
 
@@ -272,12 +281,13 @@ You'll often see regression assumptions summarized as follows:
 1. __Linearity__: If the data aren't linear, don't fit a linear model. We looked at the scatterplot in step 1 and found it was pretty linear. 
 2. __Independence__: Observations shouldn't be clustered or have any influence on other observations. It's hard to say this is the case in our situation, since it's pretty clear that developing countries and developed countries cluster together and through political and economic means influence their neighbors' policies and practices. 
 3. __Normality of residuals__: If you look at the residuals in Figure 3 and superimpose little sideways bell curves along the regression line, you should see that the residuals are normally distributed. Basically, the majority of the residuals are located close to the line and a few are found further away. This is best explained visually: 
-![](/image/residuals/png)
+
+![](/image/residuals.png){width=50%}
 
 It looks like this is generally the case for our model, using the trusty eyeball method. 
 4. __Homoscedasticity__ [^1]: Homoscedasticity means that the variance of the residual terms is somewhat constant. If your data are heteroscedastic, linear regression modeling is probably not a good choice. Again, this is better visualized:
 
-![](/image/heteroscedasticity.png)
+![](/image/heteroscedasticity.png){width=50%}
 
 When we first looked at our data in scatterplot form <a href = "#ordinary-least-squares-regression-single-variable">above</a>, we noted some definite heteroscedasticity. Let's look at it again: 
 ```{r}
@@ -290,6 +300,7 @@ final_df %>%
   )
 
 ```
+
 Below 10 years of schooling, our residuals are much wider than on the other side of 10. There might be some intuitive explanation for this observation. For instance, it's possible that there's a distinction between countries where a majority of the population finishes what is considered high school in the US and in countries where that isn't the case, years of schooling doesn't matter as much as other factors - like access to clean water and nutritious foods. 
 
 All in all, checking regression assumptions convinced me that linear regression is not really the best choice here. But on the bright side, we learned some good fundamental principles about how statistical modeling works.  
@@ -298,7 +309,7 @@ All in all, checking regression assumptions convinced me that linear regression 
 
 Hopefully you learned a bit about ordinary least squares regression and how to evaluate simple regression models. After going through a fairly brief analysis, we learned that: 
 
-- Globally, the relationship between life expectancy and education based on WHO data is fairly linear, with a simple modeling resulting in an  \\( R^2 \\) of 0.64. 
+- Globally, the relationship between life expectancy and education based on WHO data is fairly linear, with a simple modeling resulting in an  \\(R^2 \\> of 0.64. 
 - Few influential outliers were present in the data. 
 - In order to build a more robust model, data should be limited to a range where the linear regression assumptions (namely, homoscedasticity) are met. Otherwise, a more robust modeling strategy should be used.  
 
