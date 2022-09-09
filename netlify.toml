@@ -14,7 +14,7 @@ command = "hugo -F -b $DEPLOY_PRIME_URL"
 HUGO_ENV = "production"
 
 [[redirects]]
-  from = "https://ativarovsky.github.io/"
+  from = "https://ativarovsky.github.io"
   to = "/blog"
   status = 301
   force = false
