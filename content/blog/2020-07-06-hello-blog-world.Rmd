@@ -12,8 +12,15 @@ tags:
 
 ## Why I created this blog
 
-The short answer is because everyone has a blog. Your mom, your best friend, your cat probably has a blog. The slightly longer answer is that I wanted to develop my professional interest in the intersection of public health and data science, get deeper in R, and to add a fun hobby to my life. 
+I created this blog in 2020 as I was finishing my master's degree. I had really enjoyed my program, particularly the data science and biostatistics courses, and wanted to maintain the momentum of continuous learning. I also wanted to get deeper with R, practice analyzing data and drawing conclusions, and think of interesting and appropriate ways to present those conclusions. I was also nervous to forget what I'd learned, and was looking for ways to practice foundational topics outside of a classroom setting. Finally, it was the beginning of the pandemic, and after having achieved a viable sourdough starter, cultivating a few houseplants, and attempting (unsuccessfully) to cut my own hair, starting a blog was the next item on the quarantine to-do list. 
 
 ## How I created this blog
 
-As someone who had no experience in web development, the learning curve was steep. I initially built this blog using Jekyll and GitHub pages, but I found myself running into issues I didn't know how to resolve...
+As someone who had no experience in web development, I will admit that the learning curve was steep. I initially built this blog using [Jekyll](https://jekyllrb.com/) and [GitHub Pages](https://pages.github.com/), but over time, I found the workflows to be confusing and troublesome. I was running into problems with git errors and gem file updates - things would break for reasons I couldn't understand and sometimes couldn't google my way out of. All of these issues were related to a mismatch between the technology and my skillset. 
+
+Ultimately, I migrated to the Hugo/`blogdown`/Netlify stack and my only regret is that I didn't do it sooner. It was admittedly a bit of a pain to migrate my files, deal with broken links, and figure out a new folder structure. But since I didn't have a ton of content it didn't take long at all. If you're an R-user, and particularly if you don't have a lot of experience coding in command line, I would highly recommend this approach. 
+
+I followed the following tutorials, and didn't need much else. 
+* Yihui Xie's incredibly newbie-friendly `blogdown` [book](Yihui Xie)
+* Rebecca Barter's excellent [guide](https://www.rebeccabarter.com/blog/2020-02-03_blogger/)
+* Antoine Soetewey's equally excellent [guide](https://statsandr.com/blog/7-benefits-of-sharing-your-code-in-a-data-science-blog/). This blog has so much great content and I've found it to be a useful biostats in my own work (I also co-opted the [theme](https://github.com/nanxstats/hugo-renga) for this blog)
