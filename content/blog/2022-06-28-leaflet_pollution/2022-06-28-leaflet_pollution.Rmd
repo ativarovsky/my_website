@@ -1,9 +1,13 @@
 ---
-title: "Making Maps with R - Part I"
+title: "Visualizing Air Pollution with leaflet"
 author: "Alice Tivarovsky"
 date: "06/25/2022"
 toc: true
 categories:
+  - geospatial data
+  - data visualization
+  - public health
+tags:
   - geospatial data
   - data visualization
   - public health
@@ -62,7 +66,7 @@ As someone not well-versed in environmental pollutants, figuring out what datase
 
 
 ```{r load data}
-sites <- read.csv("../data/maps/aqs_sites 3.csv", header = TRUE)
+sites <- read.csv("./data/maps/aqs_sites 3.csv", header = TRUE)
 
 # annual 'concentration by monitor' dataset for 2022 
 full_2021 <- 
@@ -111,11 +115,11 @@ Let's start with a subset of states, just to play around and get a feel for how 
 
 # Source for shapefiles
 counties <- 
-  readOGR("tl_2021_us_county", layer = "tl_2021_us_county", GDAL1_integer64_policy = TRUE)
+  readOGR("cb_2018_us_county_5m", layer = "cb_2018_us_county_5m", GDAL1_integer64_policy = TRUE)
 
 some_states <- subset(counties, counties$STATEFP %in% c('06', '39', '40'))
 
-leaflet(some_states) %>% 
+leaflet(counties) %>% 
   setView(lng = -95, lat = 40, zoom = 4)  %>% 
   addTiles() %>% 
   addPolygons(weight = 0.1, smoothFactor = 0.5,  opacity = 1.0, fillOpacity = 0.2)
