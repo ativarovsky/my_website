@@ -1,36 +1,23 @@
 ---
 title: "Making an Air Pollution Map with leaflet"
 author: "Alice Tivarovsky"
-date: "06/25/2022"
+date: "08/29/2022"
 toc: true
 slug: leaflet_pollution
-categories:
-  - geospatial data
-  - data visualization
-  - public health
+output: blogdown::html_page
 tags:
   - geospatial data
   - data visualization
   - public health
 ---
 
-Notes: 
-- potential data source: https://data.cdc.gov/Environmental-Health-Toxicology/Daily-PM2-5-Concentrations-All-County-2001-2016/7vdq-ztk9
-- use this to download and unzip
-- 
-
-## Motivation 
-
-## Background 
-
-## Data Preparation
-
-## Analysis
-
-## Conclusion
-
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+  echo = TRUE, 
+  warning = FALSE, 
+  message = FALSE
+  )
+
 ```
 
 ## Motivation
@@ -39,23 +26,13 @@ These days, it seems like there is an ever-growing list of massive, complicated 
 
 But sometimes, the news gives us a bright spot. My home state of California - a place, which was once home to some of the worst air pollution in the world, recently passed a [resolution](https://www.reuters.com/business/autos-transportation/tesla-says-california-should-toughen-ev-requirements-2022-08-25/) to eliminate gasoline-powered cars by 2035. I was modestly excited by this, but I was more interested in the current air pollution situation. Since I don't think about air pollution all that much, I ended up in a rabbit-hole of unstructured research. How bad is air pollution now? How does my state, city, and county compare to others in the US? Is air pollution getting better or worse? 
 
-I will attempt to answer some of those questions below. Of course, others have already done that, and probably in a more compelling manner. But going through the process myself was fun, and if you want to learn a bit about geospatial data and `leaflet`, I think an exercise like this is highly useful.  
+I will attempt to answer some of those questions below. Of course, others have already done that, and probably in a more compelling manner. But I learned a lot going through the process myself, and if you want to learn a bit about geospatial data and`leaflet`, I think an exercise like this is highly useful. For a thorough tutorial on the capabilities of `leaflet` in R, please refer to the official tutorial [here](https://rstudio.github.io/leaflet/).  
 
 ## Background
 
-- Leaflet walktrough, show how to map health data
-- The definitive guide to R `leaflet` is found [here](https://rstudio.github.io/leaflet/)
-
-Other stuff: 
 Globally, [over 6 million](https://ourworldindata.org/air-pollution) people die each year as a result of air pollution. It's not something we think much about in the United States or other parts of the developed world (aside from, maybe, complaining about the [smog in Los Angeles](https://www.latimes.com/local/la-me-air-pollution-0428-pictures-photogallery.html)), but it's a leading cause of death in parts of Africa and Asia. And unfortunately, it seems to be getting worse in other parts of the world.  
 
-Although [progress](https://ourworldindata.org/grapher/death-rates-from-air-pollution) has been made through better policy and environmental regulation, this magnitude of premature deaths should surely attract more attention than it does now. [Some](https://www.bloomberg.com/opinion/articles/2021-03-10/air-pollution-kills-far-more-people-than-covid-ever-will#xj4y7vzkg) have posed plausible reasons for the public's lack of interest (mainly that it's an "over there" problem). [Others](https://www.thelancet.com/journals/lanplh/article/PIIS2542-5196(22)00090-0/fulltext) have scolded countries for not doing more to protect public health. 
-
-- spatial data = two types
-  - raster aka bitmap: grid of pixels in various colors (eg a jpeg or gif)
-  - vector: composed of paths, no pixels, smoother
-
-- explain PM 2.5
+Although [progress](https://ourworldindata.org/grapher/death-rates-from-air-pollution) has been made through better policy and environmental regulation, this magnitude of premature deaths should surely attract more attention than it does now. [Some](https://www.bloomberg.com/opinion/articles/2021-03-10/air-pollution-kills-far-more-people-than-covid-ever-will#xj4y7vzkg) have posed plausible reasons for the public's lack of interest (mainly that it's an "over there" problem). [Others](https://www.thelancet.com/journals/lanplh/article/PIIS2542-5196(22)00090-0/fulltext) have scolded countries for not doing more to protect public health. Either way, the health effects of air pollution require more research and attention. 
 
 
 ## Data Preparation
@@ -67,10 +44,13 @@ library(readxl)
 library(leaflet)
 library(rgdal) # Geospatial data abstraction library
 library(stats)
+library(sp)
+library(RColorBrewer)
 
 ```
 
 In the United States, the EPA maintains tens of thousands of outdoor air quality monitors and provides data to the public through several sources, including the AirData [website](https://www.epa.gov/outdoor-air-quality-data). First, we'll practice mapping skills by pinning all these  monitors on a map. The geo-locations for all active monitors were downloaded [here](https://aqs.epa.gov/aqsweb/airdata/download_files.html#Meta). We read in the data, call `leaflet`, add tiles, and center on a point in the middle of the country. 
+
 ```{r map air quality sites}
 sites <- read.csv("./data/aqs_sites 3.csv", header = TRUE)
 
@@ -84,7 +64,7 @@ naked_map
 
 ```
 
-It never fails to amaze me how little code it takes to make a map. Next, we'll pass the `sites` object (EPA refers to the location monitors as sites) to leaflet and visualize them as markers on the map. 
+It never fails to amaze me how little code it takes to make a map. Next, we'll pass the `sites` object (EPA refers to the location monitors as sites) to `leaflet` and visualize them as markers on the map. 
 ```{r site circle markers}
 
 sites_map <- 
@@ -114,6 +94,13 @@ Given its ubiquity, and the fact that it's a more general metric than PM 2.5, gr
 
 ```{r load aqi data}
 
+# annual 'concentration by monitor' dataset for 2013
+full_2013 <- 
+  read.csv("./data/annual_aqi_by_county_2013.csv", header = TRUE) %>% 
+  janitor::clean_names()
+
+head(full_2013)
+
 # annual 'concentration by monitor' dataset for 2021
 full_2021 <- 
   read.csv("./data/annual_aqi_by_county_2021.csv", header = TRUE) %>% 
@@ -121,11 +108,6 @@ full_2021 <-
 
 head(full_2021)
 
-full_2013 <- 
-  read.csv("./data/annual_aqi_by_county_2013.csv", header = TRUE) %>% 
-  janitor::clean_names()
-
-head(full_2013)
 
 ```
 
@@ -134,7 +116,7 @@ Now we need to figure out how to present the AQI data visually - one way might b
 
 To do this, we'll need county shapefiles- geo-spatial boundary files that will trace the shape of each county - which will comprise a layer over our bare leaflet map. The Census Bureau maintains shapefiles in accordance with current county boundaries, and the ones used below were found [here](https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html).
 
-Reading these shapefiles into R requires the the `rgdal` library and the `readOGR` function. 
+Reading these shapefiles into R requires the `rgdal` package and `readOGR` function. 
 
 __Let's start with a subset of states, just to play around and get a feel for how it works. Note that the shapefiles refer to states and counties by their Federal Information Processing System (FIPS) codes, but it's easy to look up [conversions](https://transition.fcc.gov/oet/info/maps/census/fips/fips.txt).__ 
 
@@ -145,16 +127,17 @@ __Let's start with a subset of states, just to play around and get a feel for ho
 counties <- 
   readOGR("cb_2018_us_county_5m", layer = "cb_2018_us_county_5m", GDAL1_integer64_policy = TRUE)
 
-some_states <- subset(counties, counties$STATEFP %in% c('06', '39', '40'))
-
-leaflet(counties) %>% 
+counties_map <- 
+  leaflet(counties) %>% 
   setView(lng = -95, lat = 40, zoom = 4)  %>% 
   addTiles() %>% 
   addPolygons(weight = 0.1, smoothFactor = 0.5,  opacity = 1.0, fillOpacity = 0.2)
 
+counties_map
+
 ```
 
-The shapefiles are working well - we can see well-defined state and county borders, overlaid nicely on top of the map. But what we want is a map, like the one above, but color-coded according to the value of the selected parameter - in our case, the median annual AQI. In map-speak, this is called a chloropleth, and in order to make one, we need to give `leaflet` the following things: 
+The shapefiles are working as expected - we can see well-defined state and county borders, overlaid nicely on top of the map. But what we want is a map, like the one above, but color-coded according to the value of the selected parameter - in our case, the median annual AQI. In map-speak, this is called a chloropleth, and in order to make one, we need to give `leaflet` the following things: 
 * A color palette
 * A numeric vector defining "bins" (i.e cutoff points at which one color in the palette will change to the next)
 
@@ -173,37 +156,73 @@ quantile(full_2021$median_aqi)
 
 ```
 
-Without any calculations or data visualization, we can already see that 2021 maximum is much higher than 2013. But let's press on, now that we have a general sense of the spread of AQI. 
+Without any calculations or data visualization, we can already see that the 2021 maximum is much higher than 2013. But let's press on, now that we have a general sense of the spread of AQI. Note that the color palette was chosen arbitrarily from [RColorBrewer](https://r-graph-gallery.com/38-rcolorbrewers-palettes.html). 
 
 ```{r chloropleth}
-bins <- c(0, 20, 40, 60, 80, 100, 120, 140)
-pal <- colorBin("OrRd", domain = full_2013$median_aqi, bins = bins)
+# 2013
+bins_13 <- c(0, 20, 40, 60, 80, 100, 120, 140)
+pal_13 <- colorBin("Reds", domain = full_2013$median_aqi, bins = bins_13)
+
+# 2021
+bins_21 <-  c(0, 20, 40, 60, 80, 100, 120, 140)
+pal_21 <- colorBin("Reds", domain = full_2021$median_aqi, bins = bins_21)
 
 ```
 
-And now, we get to the somewhat tricky part of the process. We need to combine the shapefile object `counties` with the 2013 and 2021 air pollution datasets stored in `full_2013` and `full_2021`. This seems impossible since we're combining a geospatial object with a standard dataset, but it turns out to be pretty simple. 
+And now, we get to the somewhat tricky part of the process. We need to combine the shapefile object `counties` with the 2013 and 2021 air pollution datasets stored in `full_2013` and `full_2021`. This seems impossible since we're combining a geospatial object with a standard dataset, but it turns out to be pretty simple with the `merge` function in the `sp` package:  
 
-```{r }
+```{r combine shapefile and dataset}
 
+# 2013 merge
 full_2013_1 <- 
   full_2013 %>% 
   select(county, median_aqi) %>% 
   rename("NAME" = county)
 
-counties <- merge(counties, full_2013_1, by = "NAME", duplicateGeoms = TRUE)
+counties_13 <- merge(counties, full_2013_1, by = "NAME", duplicateGeoms = TRUE)
 
+# 2021 merge
+full_2021_1 <- 
+  full_2021 %>% 
+  select(county, median_aqi) %>% 
+  rename("NAME" = county) 
 
-leaflet(counties) %>% 
-  setView(lng = -95, lat = 40, zoom = 4)  %>% 
-  addTiles() %>% 
-  addPolygons(weight = 0.1, smoothFactor = 0.5,  opacity = 1.0, fillOpacity = 0.2, fillColor = ~pal(counties$median_aqi))
+counties_21 <- merge(counties, full_2021_1, by = "NAME", duplicateGeoms = TRUE)
 
 
 ```
 
+Finally, we're ready to map the data. Notice that we're using a smaller value in the `weight` argument of `addPolygons` than we did above. This is to make the boundaries seamless and minimize visual clutter now that the counties are presented with different colors. We are also using a pop-up label, so that the user can see the name of the county corresponding to the polygon. 
+```{r 2013 data}
+
+map_2013 <- 
+  leaflet(counties_13) %>% 
+  setView(lng = -95, lat = 40, zoom = 4)  %>% 
+  addTiles() %>% 
+  addPolygons(weight = 0.05, fillOpacity = 0.8, fillColor = ~pal_13(counties_13$median_aqi), popup = ~paste(counties_13$NAME, "<br>", "Median Annual AQI:", counties_13$median_aqi))
+
+map_2013
+
+```
+
+```{r 2021 data}
+
+map_2021 <- 
+  leaflet(counties_21) %>% 
+  setView(lng = -95, lat = 40, zoom = 4)  %>% 
+  addTiles() %>% 
+  addPolygons(weight = 0.01, fillOpacity = 0.8, fillColor = ~pal_21(counties_21$median_aqi), popup = ~paste(counties_21$NAME, "<br>", "Median Annual AQI:", counties_21$median_aqi))
+
+map_2021
+
+```
+
+There's definitely quite a bit more red on the 2021 map. How much more is hard to quantify just eyeballing, so we'd want a good statistical test if we were to go any further. What is useful, though, is in-map comparison across counties. 
+
 
 ## Conclusion
 
+I hope this walk-through inspired you to play with `leaflet` on your own. I said it before, but I never cease to be amazed by the capabilities of interactive packages in R, and `leaflet` is as nice as they get. Please don't hesitate to contact me if you have any questions or suggestions. Happy mapping!
 
 ## References
 
