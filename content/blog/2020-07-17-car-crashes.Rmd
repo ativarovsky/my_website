@@ -6,7 +6,7 @@ excerpt: ""
 layout: single
 htmlwidgets: true
 toc: true
-categories:
+tags:
   - data visualization
   - ggplot2
   - injuries
