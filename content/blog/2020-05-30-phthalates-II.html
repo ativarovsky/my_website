@@ -34,7 +34,7 @@ library(jtools)
 library(huxtable)</code></pre>
 <p>Load in <code>all_data_c</code>:</p>
 <pre class="r"><code>all_data_c = 
-  readRDS(&quot;../data/all_data_c.RDS&quot;) </code></pre>
+  readRDS(&quot;./data/all_data_c.RDS&quot;) </code></pre>
 <div id="variables-used" class="section level3">
 <h3>Variables Used</h3>
 <ul>
@@ -176,7 +176,7 @@ minp_1 =
     )
 
 grid.arrange(mep_1, mehp_1, minp_1, top = &quot;Figure 3: Income vs Phthalates&quot;)</code></pre>
-<p><img src="/blog/2020-05-30-phthalates-II/2020-05-30-phthalates-II_files/figure-html/boxplots-1.png" width="672" /></p>
+<p><img src="/blog/2020-05-30-phthalates-II_files/figure-html/boxplots-1.png" width="672" /></p>
 <pre class="r"><code># education boxplots
 mep_2 = 
   box_plot_data %&gt;% 
@@ -209,7 +209,7 @@ minp_2 =
     )
 
 grid.arrange(mep_2, mehp_2, minp_2, top = &quot;Figure 4: Education vs Phthalates&quot;)</code></pre>
-<p><img src="/blog/2020-05-30-phthalates-II/2020-05-30-phthalates-II_files/figure-html/boxplots-2.png" width="672" /></p>
+<p><img src="/blog/2020-05-30-phthalates-II_files/figure-html/boxplots-2.png" width="672" /></p>
 <p>Admittedly, these boxplots are not as earth-shattering as I’d hoped. There’s definitely a lot of noise and not a definitive consistent pattern. But we can still glean some weak-ish trends. MEP biomarker levels show a slight decline with increasing income and education, MiNP shows the opposite trend, and MEHP fluctuates with both. We’ll need more rigorous analysis to pin-point relationships. Which means, it’s time to <a href="https://en.wikipedia.org/wiki/America%27s_Next_Top_Model">model</a>.</p>
 </div>
 <div id="regression-models" class="section level3">
@@ -256,7 +256,7 @@ svy_design = svydesign(id = ~SDMVPSU, strata = ~SDMVSTRA, data = all_data_m, wei
 \(education_2 = {1 for High school grad/GED  vs &lt;9th grade,  0 otherwise}\)
 \(education_3 = {1 for Some college/AA degree  vs &lt;9th grade,  0 otherwise}\)
 \(education_4 = {1 for College and above  vs &lt;9th grade,  0 otherwise}\)</p>
-<p>The fitted models are calculated below. It’ll be a lot of numbers but bear with me. We’ll get through it together.</p>
+<p>The fitted models are calculated below. It’ll be a lot of numbers but bear with me. Note that I’m using the very handy <code>export_summs</code> function in the <code>jtools</code> package to make the output readable. You can find a great tutorial <a href="https://cran.r-project.org/web/packages/jtools/vignettes/summ.html#effect_plot">here</a>.</p>
 <pre class="r"><code>mecpp_model = svyglm(log_mecpp ~ age + family_income + education + creatinine, design = svy_design, data = all_data_m) 
 
 mnbp_model = svyglm(log_mnbp ~ age + family_income + education + creatinine, design = svy_design, data = all_data_m) 

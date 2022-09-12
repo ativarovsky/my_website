@@ -2,8 +2,6 @@
 title: Visualizing Motor Vehicle Fatalities with ggplot2
 author: "alice"
 date: '2020-07-17'
-excerpt: ""
-layout: single
 htmlwidgets: true
 toc: true
 tags:
@@ -16,11 +14,9 @@ _"This is my favorite part about analytics: Taking boring flat data and bringing
 
 ## Motivation
 
-The last two posts were a bit dense so we'll try to keep it simple here. 
+Let's start with a morbid statistic: if you're younger than 30 and live in the United States, your most probable cause of death is a car crash. 
 
-Let's start with a morbid stat: if you're younger than 30 and live in the United States, your most probable cause of death is a car crash. 
-
-You may have already known that. But here's a kicker - your risk of dying in a car crash is heavily influenced by the city you live in. And although metropolitan density is an obvious factor, other variables including weather, state policy, type of car involved, and emergency response capabilities play a [huge role](https://www.iihs.org/topics/fatality-statistics/detail/state-by-state#fn1ref1).
+You may have already known that. But here's a twist- your risk of dying in a car crash is heavily influenced by the city you live in. And although metropolitan density is an obvious factor, other variables including weather, state policy, type of car involved, and emergency response capabilities play a [huge role](https://www.iihs.org/topics/fatality-statistics/detail/state-by-state#fn1ref1).
 
 In this post, we'll be using `ggplot2` - R's de-facto plotting package [^1] - to explore the relationship between city and motor vehicle fatalities in the US between 2010 and 2016.
 
@@ -28,7 +24,7 @@ We'll be using data compiled from the [Big Cities Health Coalition](https://www.
 
 ## Background
 
-In the 1950's, the United States mortality rate due to motor vehicle crashes was about [22 per 100,000](https://web.archive.org/web/20110921222129/http://www.saferoads.org/federal/2004/TrafficFatalities1899-2003.pdf) population. That proportion peaked at about 26 in the early 1970's and has since been steadily falling. Despite a somewhat alarming uptick in 2015, the proportion today hovers at [11 per 100,000](https://web.archive.org/web/20110921222129/http://www.saferoads.org/federal/2004/TrafficFatalities1899-2003.pdf). 
+In the 1950s, the United States' mortality rate due to motor vehicle crashes was about [22 per 100,000](https://web.archive.org/web/20110921222129/http://www.saferoads.org/federal/2004/TrafficFatalities1899-2003.pdf) population. That proportion peaked at about 26 in the early 1970s and has since been steadily falling. Despite a somewhat alarming uptick in 2015, the proportion today hovers at [11 per 100,000](https://web.archive.org/web/20110921222129/http://www.saferoads.org/federal/2004/TrafficFatalities1899-2003.pdf). 
 
 While that's undoubtedly huge progress, it still means that more than [35,000](https://www.cdc.gov/winnablebattles/report/motor.html) people die as a result of a motor vehicle crash every year. According to the [CDC](https://www.cdc.gov/vitalsigns/motor-vehicle-safety/index.html), about 1/3 of fatalities involve drunk drivers, another 1/3 involve drivers or passengers where proper restraints were not used (meaning seat belts, car seats, etc.), and another 1/3 involve drivers that were speeding. 
 
@@ -36,8 +32,7 @@ Another somewhat sad statistic is that the reduction in motor vehicle fatalities
 
 Interestingly, states that are predominantly rural tend to have higher vehicle mortality rates. Mississippi (22.5 deaths/100,000 population), South Carolina (20.4 deaths/100,000 population), and Alabama (19.5 deaths/100,000 population) represent the highest rates, while New York (4.8 deaths/100,000 population), Massachusetts (5.2 deaths/100,000 population), and New Jersey (6.3 deaths/100,000 population) represent three of the lowest [IIHS](https://www.iihs.org/topics/fatality-statistics/detail/state-by-state). However, this divide is much less clear when we drill down to individual cities. Cary, NC, for instance, is one of the safest cities for drivers (1.3 fatal accidents per 100,000 population), while Detroit is one of the most dangerous (16.2 fatal accidents per 100,000 population) [Nerdwallet](https://www.nerdwallet.com/blog/insurance/dangerous-cities-car-drivers-2016/). 
 
-Ok, enough sad statistics. Let's look at some data. 
-
+Let's have a look at the data. 
 
 ## Data Preparation
 ```{r global_options, include = FALSE}
@@ -175,9 +170,7 @@ Ok, that's a little better, but it still doesn't tell us anything interesting. E
 
 ### Boxplots
 
-I love a good boxplot (perhaps even more than I love a good gray square). Here's a wonderful TDS [post](https://towardsdatascience.com/understanding-boxplots-5e2df7bcbd51) on boxplots. 
-
-Let's quickly toss in a boxplot geom: 
+Here's a wonderful TDS [post](https://towardsdatascience.com/understanding-boxplots-5e2df7bcbd51) on boxplots. Let's see what happens when we use one here. 
 
 ```{r}
 drive_df %>% 
@@ -187,7 +180,7 @@ drive_df %>%
 
 ```
 
-Brilliant! Immediately we gleaned a useful nugget of information: there was an alarming spike in the data. Things were chugging along and then something happened in 2015. If you do a news search on this topic, you'll see that public health and safety folks [noticed](https://www.npr.org/sections/thetwo-way/2016/02/18/467230965/2015-traffic-fatalities-rose-by-largest-percent-in-50-years-safety-group-says) this, too. It looks like fuel prices and job growth were potential culprits, but either way, this is clearly a very useful insight.   
+Immediately we gleaned a useful nugget of information: there was an alarming spike in the data. Things were chugging along and then something happened in 2015. If you do a news search on this topic, you'll see that public health and safety folks [noticed](https://www.npr.org/sections/thetwo-way/2016/02/18/467230965/2015-traffic-fatalities-rose-by-largest-percent-in-50-years-safety-group-says) this, too. It looks like fuel prices and job growth were potential culprits, but either way, this is clearly a very useful insight.   
 
 Let's spice this plot up a bit. Let's say we want to compare men and women in the same time frame. We will need to specify a color code within the aesthetic for `geom_boxplot` and we'll also need to filter out the "Both" values for sex, since we just want male vs female. 
 
@@ -198,10 +191,10 @@ drive_df %>%
     geom_boxplot()
 
 ```
+ 
+There's an obvious disparity in mortality between males and females. Most years, male fatality averages are more than double that of females, and some years (2015, for instance) it's more like triple. The female boxplot for 2016 also looks suspiciously narrow. It's worth investigating but for now let's move on. 
 
-NICE. These are meaty results. There's an obvious disparity in mortality between males and females. Most years, male fatality averages are more than double that of females, and some years (2015, for instance) it's more like triple. The female boxplot for 2016 also looks suspiciously narrow. It's worth investigating but for now let's move on. 
-
-I'm not a huge fan of that color scheme, so let's use some nicer colors. For two-tone plots, I like to just manually choose the colors (there are a million color tools online, but [this one](https://coolors.co) is my favorite). For three or more colors, I normally use a package like [`RColorBrewer`](https://cran.r-project.org/web/packages/RColorBrewer/RColorBrewer.pdf) (built-in) or the extra-fancy [`viridis`](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html) package, which you'd need to install. I'm also going to get rid of the gray background using a theme and change the opacity of the fill color using an `alpha` statement (the latter is just personal preference). Finally, I'll capitalize the axis labels, and add a title and caption. 
+Let's use some nicer colors. For two-tone plots, I like to just manually choose the colors (there are a million color tools online, but [this one](https://coolors.co) is my favorite). For three or more colors, I normally use a package like [`RColorBrewer`](https://cran.r-project.org/web/packages/RColorBrewer/RColorBrewer.pdf) (built-in) or the extra-fancy [`viridis`](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html) package, which you'd need to install. I'm also going to get rid of the gray background using a theme and change the opacity of the fill color using an `alpha` statement (the latter is just personal preference). Finally, I'll capitalize the axis labels, and add a title and caption. 
 
 ```{r}
 drive_df %>% 
@@ -266,7 +259,7 @@ violin
 
 ```
 
-Cute, right? The gender difference we saw in the boxplots is even more detailed here. 
+The gender difference we saw in the boxplots is even more detailed here. 
 
 Let's clean this up a bit and then we're going to do something __really__ exciting. 
 ```{r}
@@ -421,7 +414,7 @@ drive_df %>%
 
 ```
 
-Oh boy. Let's go back to `facet_wrap` and just do some color-coding for sex rather than trying to make sense of this crazy grid. 
+Let's go back to `facet_wrap` and just do some color-coding for sex rather than trying to make sense of this crazy grid. 
 
 ```{r}
 drive_df %>% 
@@ -432,7 +425,7 @@ drive_df %>%
 
 ```
 
-NIIIIICE. If we fix the formatting, this will actually be an ok plot. First off, we should minimize the number of plots displayed horizontally using `ncol`. 
+If we fix the formatting, this will actually be an ok plot. First off, we should minimize the number of plots displayed horizontally using `ncol`. 
 
 ```{r}
 drive_df %>% 
@@ -462,14 +455,14 @@ drive_df %>%
 
 ```
 
-I'm pretty happy with that. It's clear we have an issue with Indianapolis (perhaps they only provide the combined male/female figure but not the individual values). It's also clear that Boston had only 2 years of data and other cities have some missing data as well. But a more interesting finding is comparing Denver to Detroit, which are conveniently side-by-side. Detroit saw a leveling off, whereas Denver saw a sharp increase in male fatalities. San Jose sticks out, too, as the only city where female fatalities surpassed male fatalities (and sharply so...) If I were an analyst looking at traffic safety, I'd put some focus on Denver and San Jose and figure out what's going on there. 
+It's clear we have an issue with Indianapolis (perhaps they only provide the combined male/female figure but not the individual values). It's also clear that Boston had only 2 years of data and other cities have some missing data as well. But a more interesting finding is comparing Denver to Detroit, which are conveniently side-by-side. Detroit saw a leveling off, whereas Denver saw a sharp increase in male fatalities. San Jose sticks out, too, as the only city where female fatalities surpassed male fatalities (and sharply so...) If I were an analyst looking at traffic safety, I'd put some focus on Denver and San Jose and figure out what's going on there. 
 
 ## Conclusions
 
-I hope you agree that we did some fun stuff and learned a bit about car crash fatalities. My takeaways were: 
+I hope you agree that we learned a bit about car crash fatalities. My takeaways were: 
 - There is a huge disparity between male and female motor vehicle fatalities in nearly every big city in the U.S., males experiencing double and sometimes triple the female average fatality rate.
 - Detroit has historically had the highest burden of motor vehicle fatalities, but Denver has recently caught up. 
-- `ggplot2` is very cool. `ggplotly` is also very cool.
+- `ggplot2` is a great tool. `ggplotly` is even better.
 
 This is absolutely just a surface-scratch of all the things `ggplot2` can do, so please take a look at the links below for more complete package exploration. 
 
@@ -483,7 +476,7 @@ This is absolutely just a surface-scratch of all the things `ggplot2` can do, so
 - Michonneau F, Teal T, Fournier A, Seok B, Obeng A, Pawlik AN, Conrado AC, Woo K, Lijnzaad P, Hart T, White EP, Marwick B, Bolker B, Jordan KL, Ashander J, Dashnow H, Hertweck K, Cuesta SM, Becker EA, Guillou S, Shiklomanov A, Klinges D, Odom GJ, Jean M, Mislan KAS, Johnson K, Jahn N, Mannheimer S, Pederson S, Pletzer A, Fouilloux A, Switzer C, Bahlai C, Li D, Kerchner D, Rodriguez-Sanchez F, Rajeg GPW, Ye H, Tavares H, Leinweber K, Peck K, Lepore ML, Hancock S, Sandmann T, Hodges T, Tirok K, Jean M, Bailey A, von Hardenberg A, Theobold A, Wright A, Basu A, Johnson C, Voter C, Hulshof C, Bouquin D, Quinn D, Vanichkina D, Wilson E, Strauss E, Bledsoe E, Gan E, Fishman D, Boehm F, Daskalova G, Tavares H, Kaupp J, Dunic J, Keane J, Stachelek J, Herr JR, Millar J, Lotterhos K, Cranston K, Direk K, Tylén K, Chatzidimitriou K, Deer L, Tarkowski L, Chiapello M, Burle M, Ankenbrand M, Czapanskiy M, Moreno M, Culshaw-Maurer M, Koontz M, Weisner M, Johnston M, Carchedi N, Burge OR, Harrison P, Humburg P, Pauloo R, Peek R, Elahi R, Cortijo S, sfn_brt, Umashankar S, Goswami S, Sumedh, Yanco S, Webster T, Reiter T, Pearse W, Li Y (2020). “datacarpentry/R-ecology-lesson: Data Carpentry: Data Analysis and Visualization in R for Ecologists, June 2019.” doi: 10.5281/zenodo.3264888, https://datacarpentry.org/R-ecology-lesson/.
 
 
-[^1]: There are people who would trash me for making that statement, given that R has an actual base graphics [package](https://www.rdocumentation.org/packages/graphics/versions/3.6.2) and from what I've seen, it works just fine. Data people on the internet sometimes [argue](https://flowingdata.com/2016/03/22/comparing-ggplot2-and-r-base-graphics/) against `ggplot2` since it seems the base graphics can get you similar results with less code. I have no position on the matter - I use `ggplot2` because I'm a sheep and that's what everyone else seems to use (and hence, what you can find a lot more online help for).
+[^1]: There are people who would roast me for making that statement, given that R has an actual base graphics [package](https://www.rdocumentation.org/packages/graphics/versions/3.6.2) and from what I've seen, it works just fine. Data people on the internet sometimes [argue](https://flowingdata.com/2016/03/22/comparing-ggplot2-and-r-base-graphics/) against `ggplot2` since it seems the base graphics can get you similar results with less code. I have no position on the matter. 
 
 [^2]: Age adjustment is a method used in epidemiology when comparing rates of disease or mortality between populations with different age breakdowns. Roughly speaking, if the population of Austin TX, for instance, is much younger than the average U.S. population, it doesn't make sense to compare mortality rates directly. We know that older people die more frequently than younger people, so if we want an apples-to-apples comparison of two populations we have to use a weighting scheme. And that's all age standardization is - a weighting scheme that assigns more weight to certain age categories to "equalize" their weight to that of the reference population. In our example, older people in Austin would get weighted more than younger people. 
 

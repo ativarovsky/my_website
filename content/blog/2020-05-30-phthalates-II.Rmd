@@ -44,7 +44,7 @@ Load in `all_data_c`:
 
 ```{r}
 all_data_c = 
-  readRDS("../data/all_data_c.RDS") 
+  readRDS("./data/all_data_c.RDS") 
 
 ```
 
@@ -293,7 +293,7 @@ Now we're finally ready to model. Based on the variables we're using, our theore
 \\(education_3 = \{1\ for\ Some\ college/AA\ degree \ vs <9th\ grade, \ 0\ otherwise\}\\)
 \\(education_4 = \{1\ for\ College\ and\ above \ vs <9th\ grade, \ 0\ otherwise\}\\)
 
-The fitted models are calculated below. It'll be a lot of numbers but bear with me. We'll get through it together.  
+The fitted models are calculated below. It'll be a lot of numbers but bear with me. Note that I'm using the very handy `export_summs` function in the `jtools` package to make the output readable. You can find a great tutorial [here](https://cran.r-project.org/web/packages/jtools/vignettes/summ.html#effect_plot).
 
 ```{r models}
 mecpp_model = svyglm(log_mecpp ~ age + family_income + education + creatinine, design = svy_design, data = all_data_m) 
