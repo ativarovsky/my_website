@@ -1,15 +1,17 @@
 ---
-title: Phthalate Exposure in U.S. Women of Reproductive Age - an NHANES Review, Part I 
-author: "alice"
+title: "Phthalate Exposure in U.S. Women of Reproductive Age - an NHANES Review, Part I"
+author: "Alice Tivarovsky"
 date: '2020-07-11'
 htmlwidgets: true
 toc: true
 categories:
-  - Environment
-  - NHANES
+  - R
+  - Modeling
+  - Epidemiology
 tags: 
-  - Environment
-  - NHANES
+  - R
+  - Modeling
+  - Epidemiology
 ---
 
 # Motivation

@@ -10,6 +10,11 @@ tags:
   - Data Visualization
   - Epidemiology
   - Covid
+categories:
+  - R
+  - Data Visualization
+  - Epidemiology
+  - Covid  
 ---
 
 ```{r setup, include=FALSE}
@@ -54,15 +59,17 @@ Next, we'll limit to United States data points, and select only the necessary co
 
 us_df <- 
   raw_data %>% 
-  select(location, date, new_cases) %>% 
+  select(location, date, new_cases, new_cases_smoothed) %>% 
   filter(location == "United States") %>% 
   mutate(date = as.Date(date), 
-         year = case_when('2020-01-01'>= date & date < '2021-01-01' ~ 2020, 
-                          '2021-01-01'>= date & date < '2022-01-01' ~ 2021, 
+         year = case_when('2020-01-01'>= date & date < '2021-01-01' ~ "2020", 
+                          '2021-01-01'>= date & date < '2022-01-01' ~ "2021", 
                           '2022-01-01'>= date & date < '2023-01-01' ~ 2022)
          )
 
 head(us_df)
+
+rm(raw_data)
 
 ```
 
@@ -70,131 +77,42 @@ head(us_df)
 
 Now we'll plot a regular `plotly` figure as a "before" shot. 
 
-```{r load aqi data}
+```{r regular plot}
 
-# annual 'concentration by monitor' dataset for 2013
-full_2013 <- 
-  read.csv("./data/annual_aqi_by_county_2013.csv", header = TRUE) %>% 
-  janitor::clean_names()
-
-head(full_2013)
-
-# annual 'concentration by monitor' dataset for 2021
-full_2021 <- 
-  read.csv("./data/annual_aqi_by_county_2021.csv", header = TRUE) %>% 
-  janitor::clean_names() 
-
-head(full_2021)
-
+us_df %>% 
+  plot_ly(x = ~date) %>% 
+  add_lines(y = ~new_cases) %>% 
+  add_lines(y = ~new_cases_smoothed)
 
 ```
 
 
-Now we need to figure out how to present the AQI data visually - one way might be to color the marker representing each monitor in accordance with the level of pollution it measured for some time interval. But given the high concentration of dots, it might be hard to read. Instead, let's try to divide the United States by county lines. The intent of this approach is to mimic what the Washington Post used in this 2019 [article](https://www.washingtonpost.com/business/2019/10/23/air-pollution-is-getting-worse-data-show-more-people-are-dying/), where it reported an excess of 10,000 deaths due to air pollution over a 2-year period. 
+```{r plot with buttons}
 
-To do this, we'll need county shapefiles- geo-spatial boundary files that will trace the shape of each county - which will comprise a layer over our bare leaflet map. The Census Bureau maintains shapefiles in accordance with current county boundaries, and the ones used below were found [here](https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html).
-
-Reading these shapefiles into R requires the `rgdal` package and `readOGR` function. 
-
-```{r shapefiles}
-
-# Source for shapefiles: https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html
-counties <- 
-  readOGR("cb_2018_us_county_5m", layer = "cb_2018_us_county_5m", GDAL1_integer64_policy = TRUE)
-
-counties_map <- 
-  leaflet(counties) %>% 
-  setView(lng = -95, lat = 40, zoom = 4)  %>% 
-  addTiles() %>% 
-  addPolygons(weight = 0.1, smoothFactor = 0.5,  opacity = 1.0, fillOpacity = 0.2)
-
-counties_map
-
-```
-
-<br>
-The shapefiles are working as expected - we can see well-defined state and county borders, overlaid nicely on top of the map. But what we want is a map, like the one above, but color-coded according to the value of the selected parameter - in our case, the median annual AQI. In map-speak, this is called a chloropleth, and in order to make one, we need to give `leaflet` the following things: 
-- A color palette
-- A numeric vector defining "bins" (i.e cutoff points at which one color in the palette will change to the next)
-
-Since we don't yet know the range of values for median AQI, let's run some descriptive statistics on it.  
-
-```{r find median AQI}
-
-# 2013 data
-range(full_2013$median_aqi)
-quantile(full_2013$median_aqi)
-
-# 2021 data
-range(full_2021$median_aqi)
-quantile(full_2021$median_aqi)
-
+us_df %>% 
+  plot_ly(x = ~date) %>% 
+  add_lines(y = ~ new_cases) %>% 
+  add_lines(y = ~new_cases_smoothed) %>% 
+  layout(
+    title = "Plotly Buttons", 
+    updatemenus = list(
+      list(type = "buttons", 
+           buttons = list(
+             list(method = "restyle", 
+                  args = list("year", 2020), 
+                  label = "2020"), 
+             list(method = "resyle", 
+                  args = list("year", 2021), 
+                  label = "2021"), 
+             list(method = "restyle", 
+                  args = list("year", 2022), 
+                  label = "2022")
+             )
+           ))
+    )
+  
 
 ```
-
-Without any calculations or data visualization, we can already see that the 2021 maximum is much higher than 2013. But let's press on, now that we have a general sense of the spread of AQI. Note that the color palette was chosen arbitrarily from [RColorBrewer](https://r-graph-gallery.com/38-rcolorbrewers-palettes.html). 
-
-```{r chloropleth}
-# 2013
-bins_13 <- c(0, 20, 40, 60, 80, 100, 120, 140)
-pal_13 <- colorBin("Reds", domain = full_2013$median_aqi, bins = bins_13)
-
-# 2021
-bins_21 <-  c(0, 20, 40, 60, 80, 100, 120, 140)
-pal_21 <- colorBin("Reds", domain = full_2021$median_aqi, bins = bins_21)
-
-```
-
-And now, we get to the somewhat tricky part of the process. We need to combine the shapefile object `counties` with the 2013 and 2021 air pollution datasets stored in `full_2013` and `full_2021`. This seems impossible since we're combining a geospatial object with a standard dataset, but it turns out to be pretty simple with the `merge` function in the `sp` package:  
-
-```{r combine shapefile and dataset}
-
-# 2013 merge
-full_2013_1 <- 
-  full_2013 %>% 
-  select(county, median_aqi) %>% 
-  rename("NAME" = county)
-
-counties_13 <- merge(counties, full_2013_1, by = "NAME", duplicateGeoms = TRUE)
-
-# 2021 merge
-full_2021_1 <- 
-  full_2021 %>% 
-  select(county, median_aqi) %>% 
-  rename("NAME" = county) 
-
-counties_21 <- merge(counties, full_2021_1, by = "NAME", duplicateGeoms = TRUE)
-
-
-```
-
-Finally, we're ready to map the data. Notice that we're using a smaller value in the `weight` argument of `addPolygons` than we did above. This is to make the boundaries seamless and minimize visual clutter now that the counties are presented with different colors. We are also using a pop-up label, so that the user can see the name of the county corresponding to the polygon. 
-```{r 2013 data}
-
-map_2013 <- 
-  leaflet(counties_13) %>% 
-  setView(lng = -95, lat = 40, zoom = 4)  %>% 
-  addTiles() %>% 
-  addPolygons(weight = 0.05, fillOpacity = 0.8, fillColor = ~pal_13(counties_13$median_aqi), popup = ~paste(counties_13$NAME, "<br>", "Median Annual AQI:", counties_13$median_aqi))
-
-map_2013
-
-```
-
-```{r 2021 data}
-
-map_2021 <- 
-  leaflet(counties_21) %>% 
-  setView(lng = -95, lat = 40, zoom = 4)  %>% 
-  addTiles() %>% 
-  addPolygons(weight = 0.01, fillOpacity = 0.8, fillColor = ~pal_21(counties_21$median_aqi), popup = ~paste(counties_21$NAME, "<br>", "Median Annual AQI:", counties_21$median_aqi))
-
-map_2021
-
-```
-<br>
-There's definitely quite a bit more red on the 2021 map. How much more is hard to quantify just eyeballing, so we'd want a good statistical test if we were to go any further. What is useful, though, is in-map comparison across counties. 
-
 
 ## Conclusion
 

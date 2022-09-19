@@ -1,10 +1,15 @@
 ---
-title: Visualizing Motor Vehicle Fatalities with ggplot2
-author: "alice"
+title: "Visualizing Motor Vehicle Fatalities with ggplot2"
+author: "Alice Tivarovsky"
 date: '2020-07-17'
+slug: car-crashes
 htmlwidgets: true
 toc: true
 tags:
+  - data visualization
+  - ggplot2
+  - injuries
+categories:
   - data visualization
   - ggplot2
   - injuries
