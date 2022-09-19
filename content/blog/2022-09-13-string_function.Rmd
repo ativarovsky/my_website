@@ -1,0 +1,69 @@
+---
+title: "Untitled"
+author: "Alice Tivarovsky"
+date: '2022-09-14'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+The long way
+```{r long way}
+
+df_start <- 
+  tibble(a = c("a", "b", "c"), 
+     b = c("d", "e", "f"), 
+     c = c("g", "h", "i")
+     )
+
+string <- c("appleblahbananayocarrot", "carrotappleplease", "joebobbanana")
+df_orig <- cbind(df_start, string)
+
+vec_1 <- if_else(str_detect(string, "apple") == TRUE, "apple", "")
+vec_2 <- if_else(str_detect(string, "banana") == TRUE, "banana", "")
+vec_3 <- if_else(str_detect(string, "carrot") == TRUE, "carrot", "")
+
+df_clean <- tibble(vec_1, vec_2, vec_3)
+
+cbind(df_orig, df_clean)
+
+```
+
+Better way 
+```{r}
+
+clean_string <- c("apple", "banana", "carrot")
+c_string = vector(mode = "character", length = 13)
+
+
+for (i in 1:length(clean_string)){
+  c_string[i] = if_else(str_detect(df_orig$string, clean_string[i]) == TRUE, clean_string[i], "")
+}
+c_string
+
+
+
+```
+
+```{r}
+x <- c("\apple", "banana", "pear")
+writeLines(x)
+
+str_view(x, "an")
+
+str_view(x, "\\.a.")
+
+y <- c("\"\'\\")
+writeLines(y)
+
+str_view(y, )
+
+
+```
+

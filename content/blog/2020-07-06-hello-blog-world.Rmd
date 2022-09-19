@@ -1,13 +1,13 @@
 ---
-title: Hello (blog)world
-author: Alice Tivarovsky
+title: "Hello (blog)world"
+author: "Alice Tivarovsky"
 date: '2020-07-06'
 categories:
   - R
-  - blog
+  - Blogging
 tags:
   - R
-  - blog
+  - Blogging
 ---
 
 ## Why I created this blog
@@ -21,8 +21,8 @@ As someone who had no experience in web development, I will admit that the learn
 Ultimately, I migrated to the Hugo/`blogdown`/Netlify stack and my only regret is that I didn't do it sooner. It was admittedly a bit of a pain to migrate my files, deal with broken links, and figure out a new folder structure. But since I didn't have a ton of content it didn't take long at all. If you're an R-user, and particularly if you don't have a lot of experience coding in command line, I would highly recommend this approach. 
 
 I followed the following tutorials, and didn't need much else. 
-* Yihui Xie's incredibly newbie-friendly `blogdown` [book](Yihui Xie)
-* Rebecca Barter's excellent [guide](https://www.rebeccabarter.com/blog/2020-02-03_blogger/)
-* Antoine Soetewey's equally excellent [guide](https://statsandr.com/blog/7-benefits-of-sharing-your-code-in-a-data-science-blog/). This blog has so much great content and I've found it to be a useful biostats in my own work (I also co-opted the [theme](https://github.com/nanxstats/hugo-renga) for this blog)
+- Yihui Xie's incredibly newbie-friendly `blogdown` [book](Yihui Xie)
+- Rebecca Barter's excellent [guide](https://www.rebeccabarter.com/blog/2020-02-03_blogger/)
+- Antoine Soetewey's equally excellent [guide](https://statsandr.com/blog/7-benefits-of-sharing-your-code-in-a-data-science-blog/). This blog has so much great content and I've found it to be a useful biostats in my own work (I also co-opted the [theme](https://github.com/nanxstats/hugo-renga) for this blog)
 
 I also set up a redirect from my old Jekyll site on GitHub pages site to this one. This was pretty easy as well. I followed the guide [here](https://superdevresources.com/redirects-jekyll-github-pages/), but in a nutshell, I just added a redirect.html file to the _layouts folder, pasted in the provided code, and updated the YAML in my index.html (homepage) file with the redirect_to location (the URL of this site). I repeated the process for all the posts - there were not too many so this wasn't cumbersome, but I'm sure there's a programmatic way to do this. 
