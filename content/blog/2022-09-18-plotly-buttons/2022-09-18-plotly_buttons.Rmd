@@ -1,5 +1,5 @@
 ---
-title: "Adding Buttons to plotly Plots"
+title: "Adding Subset Buttons to plotly Plots"
 author: "Alice Tivarovsky"
 date: "2022-09-18"
 toc: true
@@ -9,12 +9,10 @@ tags:
   - R
   - Data Visualization
   - Epidemiology
-  - Covid
 categories:
   - R
   - Data Visualization
   - Epidemiology
-  - Covid  
 ---
 
 ```{r setup, include=FALSE}
@@ -28,9 +26,10 @@ knitr::opts_chunk$set(
 
 ```
 
+
 ## Motivation
 
-I recently found myself drafting some `plotly` figures for work, and I wanted to add a bit more interactivity without creating a `shiny` app. I plotted time-series data and I wanted the end user to be able to subset the plot to a year of their choosing, or to see the entire range of time on one figure.
+I recently found myself drafting some `plotly` figures for work, and I wanted to add a bit more interactivity without creating a `shiny` app. I plotted time-series data and I wanted the end user to be able to subset the plot to a year of their choosing, or to see the entire range of time in one figure.
 
 After a bit of googling around, I found a few solutions, but [this one](https://plotly.com/r/custom-buttons/) suited my needs the best. These buttons are straight-forward for the user and pretty simple to code up. Below is a quick demo. 
 
@@ -43,6 +42,7 @@ library(plotly)
 
 ```
 
+
 We'll be using Covid-19 case data in the United States, downloaded from [Our World in Data](https://ourworldindata.org/explorers/coronavirus-data-explorer?facet=none&Metric=Confirmed+cases&Interval=7-day+rolling+average&Relative+to+Population=true&Color+by+test+positivity=false&country=~USA). 
 
 ```{r load data}
@@ -53,74 +53,73 @@ head(raw_data)
 
 ```
 
-Next, we'll limit to United States data points, and select only the necessary columns. We'll also fix the `date` variable to date, and add a new categorical variable for the year, which will become the basis of our buttons. 
+Next, we'll limit to United States data points, and select only the necessary columns. We'll use `new_cases_smoothed` (smoothed over the week of data) to avoid the noise of daily fluctuation around the line. We'll also fix the variable class of `date`. 
 
 ```{r clean data}
-
 us_df <- 
   raw_data %>% 
-  select(location, date, new_cases, new_cases_smoothed) %>% 
+  select(location, date, new_cases_smoothed) %>% 
   filter(location == "United States") %>% 
-  mutate(date = as.Date(date), 
-         year = case_when('2020-01-01'>= date & date < '2021-01-01' ~ "2020", 
-                          '2021-01-01'>= date & date < '2022-01-01' ~ "2021", 
-                          '2022-01-01'>= date & date < '2023-01-01' ~ 2022)
-         )
+  mutate(date = as.POSIXct(date))
 
-head(us_df)
+us_df %>% 
+  filter(!is.na(new_cases_smoothed)) %>% 
+  head()
 
+# huge file, remove to save memory
 rm(raw_data)
 
 ```
 
 ## Analysis
 
-Now we'll plot a regular `plotly` figure as a "before" shot. 
+We will start by plotting a regular `plotly` figure, as a "before" shot, if you will. 
 
 ```{r regular plot}
-
-us_df %>% 
+regular_plot <- 
+  us_df %>% 
   plot_ly(x = ~date) %>% 
-  add_lines(y = ~new_cases) %>% 
-  add_lines(y = ~new_cases_smoothed)
+  add_lines(y = ~new_cases_smoothed) %>% 
+  layout(title = "Covid-19 Incidence in the US", 
+         yaxis = list(title = "New Cases (Smoothed)"))
+
+regular_plot
 
 ```
-
+<br>
+Now, we'll apply the buttons. To do this, we will use an updatemenu `relayout` method, as detailed [here](https://plotly.com/r/custom-buttons/). There are several methods, but `relayout` is the one most appropriate, since it will allow the user to modify a layout attribute, in this case the range of the x-axis.  
 
 ```{r plot with buttons}
-
-us_df %>% 
+button_plot <- 
+  us_df %>% 
   plot_ly(x = ~date) %>% 
-  add_lines(y = ~ new_cases) %>% 
   add_lines(y = ~new_cases_smoothed) %>% 
   layout(
-    title = "Plotly Buttons", 
+    title = "Covid-19 Incidence in the US", 
+    yaxis = list(title = "New Cases (Smoothed)"),
     updatemenus = list(
-      list(type = "buttons", 
-           buttons = list(
-             list(method = "restyle", 
-                  args = list("year", 2020), 
-                  label = "2020"), 
-             list(method = "resyle", 
-                  args = list("year", 2021), 
-                  label = "2021"), 
-             list(method = "restyle", 
-                  args = list("year", 2022), 
-                  label = "2022")
-             )
-           ))
-    )
+      list(type = "buttons",
+           buttons = list(list(label = "All", 
+                              method = "relayout", 
+                              args = list(list(xaxis = list(range = c("2020-01-01","2022-12-31"))))),
+                           list(label = "2020", 
+                                method = "relayout", 
+                                args = list(list(xaxis = list(range = c("2020-01-01","2020-12-31"))))),
+                          list(label = "2021", 
+                                method = "relayout", 
+                                args = list(list(xaxis = list(range = c("2021-01-01","2021-12-31"))))),
+                          list(label = "2022", 
+                                method = "relayout", 
+                                args = list(list(xaxis = list(range = c("2022-01-01","2022-12-31")))))
+                          ))))
+
+button_plot
   
 
 ```
 
+<br>
+
 ## Conclusion
 
-I hope this walk-through inspired you to play with `leaflet` on your own. I said it before, but I never cease to be amazed by the capabilities of interactive packages in R, and `leaflet` is as nice as they get. Please don't hesitate to contact me if you have any questions or suggestions. Happy mapping!
-
-## References
-
-- https://sesync-ci.github.io/maps-in-R-lesson/2016/09/14/#/slides/shinyleaflet
-- https://aqs.epa.gov/aqsweb/airdata/download_files.html#Annual (Air Quality datasets); used Annual Concentration by Monitor
-
-[^1]: Here in Los Angeles, we see them frequently during fire season.  
+And that's it! We took a `plotly` figure and made it even more functional with a few easy-to-code controls. Just when I thought I knew the ins and outs of `plotly`, it surprised me with a sweet feature I've never seen.
