@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-Below is a snapshot of my career thus far. My journey to public health has been, shall we say, non-linear. But good stories always have some plot twists and turns. Today, I feel fortunate to work in a highly visible field, where I get to play with data, help policy-makers make decisions, and, with hope, leave a positive impact in the community. 
+Below is a snapshot of my career thus far. The journey has been, shall we say, non-linear. But good stories always have some plot twists and turns. Today, I feel fortunate to work in a highly visible field, where I get to play with data, help policy-makers make decisions, and, with hope, leave a positive impact in the community. 
 
 For more details, please see my [résumé](/pdf/AliceTivarovskyResume.pdf) and find me on [LinkedIn](https://www.linkedin.com/in/alice-tivarovsky-56281131/). 
 
