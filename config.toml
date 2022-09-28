@@ -37,5 +37,11 @@ name = "Blog"
 url = "/blog/"
 weight = 2
 
+[[menu.primary]]
+identifier = "tags"
+name = "Posts by Tag"
+url = "/tags/"
+weight = 3
+
 [permalinks]
     post = "/:year/:month/:day/:slug/"
