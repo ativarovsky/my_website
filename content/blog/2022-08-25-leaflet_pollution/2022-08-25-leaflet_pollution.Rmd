@@ -3,15 +3,12 @@ title: "Mapping Air Pollution with leaflet"
 author: "Alice Tivarovsky"
 date: "2022-08-25"
 toc: true
-slug: leaflet_pollution
+slug: leaflet-pollution
 output: blogdown::html_page
 tags:
   - R
-  - leaflet
-  - tutorial 
-  - geospatial data
-  - data visualization
-  - public health
+  - Data Visualization
+  - Epidemiology
 ---
 
 ```{r setup, include=FALSE}
