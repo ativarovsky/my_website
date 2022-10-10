@@ -1,8 +1,14 @@
 ---
-title: "Untitled"
+title: "Cleaning Messy Strings using Regular Expressions and stringr"
 author: "Alice Tivarovsky"
-date: '2022-09-14'
-output: html_document
+date: "2022-09-18"
+toc: true
+slug: strings-regexps
+output: blogdown::html_page
+tags:
+  - R
+categories:
+  - R
 ---
 
 ```{r setup, include=FALSE}
@@ -12,6 +18,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 ```
+
+
+
+## Notes
+
+- data source: https://en.wikipedia.org/wiki/List_of_tallest_people
+- remove units from height columns
+- separate out age at death and year born
 
 The long way
 ```{r long way}
