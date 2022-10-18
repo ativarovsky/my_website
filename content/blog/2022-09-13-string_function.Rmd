@@ -27,7 +27,7 @@ I recently re-read some parts of Hadley Wickham and Garrett Grolemund's [R for D
 
 I recently completed several work projects that involved cleaning lots of messy data, in particular, free text strings that I needed to organize into tidy variables and text-mine for health insights. To do this efficiently, I learned how to use regular expressions (regexps), as suggested by Hadley Wickham and Garrett Grolemund's in [R for Data Science](https://r4ds.had.co.nz/strings.html). 
 
-As the authors suggest, it takes a little while to earn the rules of regexps and get comfortable using them, but once you do, you'll find them to be a powerful tool in your data cleaning toolbox. The best resources I found for learning and practicing regexps are the RStudio `stringr` cheatsheet (found [here](https://github.com/rstudio/cheatsheets/blob/main/strings.pdf)) and this handy interactive [program](https://regexlearn.com/). 
+As the authors suggest, it takes a little while to learn the rules of regexps and get comfortable using them, but once you do, you'll see they're a powerful tool in your data cleaning toolbox. The best resources I found for learning and practicing regexps are the RStudio `stringr` cheatsheet (found [here](https://github.com/rstudio/cheatsheets/blob/main/strings.pdf)) and this handy interactive [program](https://regexlearn.com/). 
 
 Below is a bit of practice with `stringr` and Regexps using Wikipedia's [list of tallest people](https://en.wikipedia.org/wiki/List_of_tallest_people) on record. I realize this is not exactly a public health topic, but it's a simple motivating example that can be leveraged to any messy dataset containing strings. We'll be using the `rvest` package to scrape an html table from the Wikipedia page, following the R-bloggers tutorial [here](https://www.r-bloggers.com/2015/01/using-rvest-to-scrape-an-html-table/). 
 
@@ -48,6 +48,8 @@ tall_table <-
 
 head(tall_table)
 
+tall_table %>% 
+  filter(name == "Jeison Rodríguez")
 ```
 
 Although this table is easy to read for a human, analysis using a computer will require data cleaning. Specifically, we need to address the following problems: 
@@ -88,9 +90,9 @@ tall_table_2 <-
   tall_table_1 %>% 
   mutate(metric = str_trim(metric, side = "both"), 
          metric = as.numeric(metric)) %>% 
-  rename(ht_in_cm = metric)
+  rename(ht_cm = metric)
   
-tall_table_2$ht_in_cm
+tall_table_2$ht_cm
 
 ```
 Great, these are actual numbers. 
@@ -139,8 +141,9 @@ tall_table_4 <-
   tall_table_3 %>% 
   mutate(imperial = str_remove(imperial, "\\[\\d*\\]"))
 
+
 ```
-Next, we need to separate the feet and inches values so we can convert to a value like XX.XX inches, allowing us to do numerical manipulation on the value. The pattern in `imperial` is now "X ft XX in", where the inches are expressed in different ways (1/2, 0.5). Let's do inches first. We want to extract out a number that lies between "ft" and "in". It turns out, there are "look around" regexps, that find a pattern preceding or following another pattern. Roughly speaking, "a(?=c)" means "a" followed by "c" and "(?<=b)a" means "a" preceded by "b". Note that "[:graph:]" means any letter, number, or punctuation, and the asterisk after it means repeated zero ore more times. 
+Next, we need to separate the feet and inches values so we can convert to a value like XX.XX inches, allowing us to do numerical manipulation on the value. The pattern in `imperial` is now "X ft XX in", where the inches are expressed in different ways (1/2, 0.5). Let's do inches first. We want to extract out the number that lies between "ft" and "in". Luckily, there are "look around" regexps, that find a pattern preceding or following another pattern. Roughly speaking, "a(?=c)" means "a" followed by "c" and "(?<=b)a" means "a" preceded by "b". Note that "[:graph:]" means any letter, number, or punctuation, and the asterisk after it means repeated zero ore more times. 
 
 ```{r}
 # demo
@@ -155,15 +158,65 @@ tall_table_5 <-
          imperial = str_remove(imperial, "\\s(ft)\\s[:graph:]*\\s[:graph:]*")) %>% 
   rename(ht_ft = imperial)
 
-# trim whitespace and convert to numeric
+# trim white-space
 tall_table_6 <- 
   tall_table_5 %>% 
   mutate(inches = str_trim(inches, side = c("both")), 
          ht_ft = str_trim(ht_ft, side = c("both")))
 
+tall_table_6 %>% 
+  filter(name == "Jeison Rodríguez")
 
 ```
 
+Now, we get to the most challenging part: transforming `inches` into a numerical variable. This means converting numbers written as fractions into decimals, while not transforming the already-clean decimal values. The simplest way to do this is probably to find a forward-slash (/), and find the numbers immediately before and after it. After that, we'll separate out the numbers and divide them to arrive at a final, numerical `inches_decimal`. 
+
+```{r}
+tall_table_7 <- 
+  tall_table_6 %>% 
+  mutate(inches_fraction = str_extract(inches, "\\d\\⁄\\d"), 
+         inches = str_remove(inches, "\\d\\⁄\\d"), 
+         inches = str_remove(inches, "\\+"), 
+         inches = str_trim(inches, side = c("both"))) %>% 
+  mutate(inches_1 = as.numeric(str_sub(inches_fraction, 1, 1)), 
+         inches_2 = as.numeric(str_sub(inches_fraction, -1, -1)), 
+         inches_decimal = round((inches_1/inches_2), digits = 2))
+
+# demo
+tall_table_7 %>% 
+  filter(!is.na(inches_decimal)) %>% 
+  select(inches, inches_fraction, inches_1, inches_2, inches_decimal) 
+
+#writeLines(tall_table_6$inches)
+
+```
+Finally, we will add `inches` to `inches_decimal` to arrive at the final portion of height in inches. We'll also address the outlier "7¼" inches. Then, we'll convert the now-clean `inches` to feet, and add it to `ht_ft`. 
+
+```{r}
+tall_table_8 <- 
+  tall_table_7 %>% 
+  mutate(inches = if_else(inches == "7¼", "7.25", inches), 
+         inches = as.numeric(inches), 
+         inches = if_else(is.na(inches), 0, inches), 
+         in_to_feet = round((inches/12), digits = 2), 
+         ht_ft = if_else(name ==  "Jeison Rodríguez", "7.44", ht_ft),
+         ht_ft = round(as.numeric(ht_ft), digits = 2), 
+         ht_ft = ht_ft + in_to_feet
+  ) %>% 
+  select(-c(inches_fraction, inches, inches_1, inches_2, inches_decimal))
+
+```
+
+Now we can do a fun exercise - we can check our work by directly converting `ht_cm` to height in feet (one foot is 30.48 cm), and seeing if all the wrangling we underwent with inches and feet gave us correct numbers.
+
+```{r}
+test <-
+  tall_table_8 %>% 
+  select(ht_ft, ht_cm) %>% 
+  mutate(check_ht = round(ht_ft*30.48, digits = 2))
+
+```
+We're not dead on, but we got pretty close. The reason for the error has a lot more to do with significant digits in the original table than our text-parsing. And after all that work, our data-frame is 
 
 ## Notes
 

@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 Below is a snapshot of my career thus far. The journey has been, shall we say, non-linear. But good stories always have some plot twists and turns. Today, I feel fortunate to work in a highly visible field, where I get to play with data, help policy-makers make decisions, and, with hope, leave a positive impact in the community. 
 
-For more details, please see my [résumé](/pdf/AliceTivarovskyResume.pdf) and find me on [LinkedIn](https://www.linkedin.com/in/alice-tivarovsky-56281131/). 
+For more details, please find me on [LinkedIn](https://www.linkedin.com/in/alice-tivarovsky-56281131/). 
 
 ***
 ### Education
@@ -22,13 +22,13 @@ For more details, please see my [résumé](/pdf/AliceTivarovskyResume.pdf) and f
 
 ### Professional
 
-#### Epidemiologist (Covid-19 Response) | Mar 2021 - Present | Los Angeles County Department of Public Health  
+#### Epidemiologist (Covid-19 Response) | Feb 2022 - Present | Los Angeles County Department of Public Health  
 - Clean, analyze, and manage all data received by the Education Sector on a daily basis (n = 500k)
 - Write, validate, and optimize data management and analysis programs using R, SQL, and SAS
 - Produce and maintain all unit data products, including public-facing [TK-12 School Covid-19 Data Dashboard](http://publichealth.lacounty.gov/media/coronavirus/education/index.htm) and internal Covid-19 report, containing summaries and in-depth analyses of all case data reported to Education Sector, for use by Public Health leadership
 - Serve as supervisor for Epi Analyst
 
-#### Data Analyst (Covid-19 Response) | Sep 2020 - Mar 2021 | Los Angeles County Department of Public Health  
+#### Epidemiology Data Analyst (Covid-19 Response) | Sep 2020 - Feb 2022 | Los Angeles County Department of Public Health  
 - Built Covid-19 dashboards and reports using SAS and R; optimized programs and performed troubleshooting
 - Investigated and supported containment of Covid-19 outbreaks in universities
 
