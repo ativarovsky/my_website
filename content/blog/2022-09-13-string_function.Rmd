@@ -1,5 +1,5 @@
 ---
-title: "Cleaning Messy Strings using stringr"
+title: "Cleaning Messy Strings Using stringr and Regexps"
 author: "Alice Tivarovsky"
 date: "2022-09-18"
 toc: true
@@ -7,8 +7,10 @@ slug: strings-regexps
 output: blogdown::html_page
 tags:
   - R
+  - Web Scraping
 categories:
   - R
+  - Web Scraping
 ---
 
 ```{r setup, include=FALSE}
@@ -25,7 +27,7 @@ library(rvest)
 
 I recently re-read some parts of Hadley Wickham and Garrett Grolemund's [R for Data Science](https://r4ds.had.co.nz/index.html) to guide some of my work projects. As impressed as I was by the text as a master's student, I am even more impressed by how comprehensive, well-thought out, and helpful it is in the "real world". 
 
-I recently completed several work projects that involved cleaning lots of messy data, in particular, free text strings that I needed to organize into tidy variables and text-mine for health insights. To do this efficiently, I learned how to use regular expressions (regexps), as suggested by Hadley Wickham and Garrett Grolemund's in [R for Data Science](https://r4ds.had.co.nz/strings.html). 
+I recently completed several work projects that involved cleaning lots of messy data, in particular, free text strings that I needed to organize into tidy variables and text-mine for insights. To do this efficiently, I learned how to use regular expressions (regexps), as suggested by Hadley Wickham and Garrett Grolemund's in [R for Data Science](https://r4ds.had.co.nz/strings.html). 
 
 As the authors suggest, it takes a little while to learn the rules of regexps and get comfortable using them, but once you do, you'll see they're a powerful tool in your data cleaning toolbox. The best resources I found for learning and practicing regexps are the RStudio `stringr` cheatsheet (found [here](https://github.com/rstudio/cheatsheets/blob/main/strings.pdf)) and this handy interactive [program](https://regexlearn.com/). 
 
@@ -72,7 +74,7 @@ head(tall_table_1$metric)
 
 ```
 
-Here we run into our first problem: trailing blanks. When we removed "cm" from the strings, we created phantom blanks, which will prevent us from cleanly coercing the characters to numbers: 
+Here we run into our first problem: trailing blanks. When we removed "cm" from the strings, we created phantom blanks, as evidenced by the space between the last digit and the end quote. These will prevent us from cleanly coercing the characters to numbers: 
 
 ```{r}
 tall_table_test <- 
@@ -83,7 +85,7 @@ head(tall_table_test$metric)
 
 ```
 
-This is annoying but also very easy to fix. We just need to call `str_trim`: 
+This is very easy to fix with `str_trim`: 
 
 ```{r}
 tall_table_2 <- 
@@ -95,7 +97,6 @@ tall_table_2 <-
 tall_table_2$ht_cm
 
 ```
-Great, these are actual numbers. 
 
 Now we move on to the `imperial` variable, which takes on the following (very un-tidy) values: 
 
@@ -104,7 +105,7 @@ tall_table_2$imperial
 ```
 We've got numbers with brackets (links to footnotes in the original Wikipedia page), we've got some inches measures that look like "1.5 inches", some that look like "1+1/2 in", we have some that drop the plus ("81/2 in", which should probably read "8 1/2 in"), and then we have one observation that seems to have carried over some CSS code. 
 
-First we'll fix the observation with CSS code by manually overwriting the value using the original table. We'll also manually fix the observation that lists a height range ("8 ft 0 in-8 ft 1 in") since for our purposes, there's not much difference between an 8-foot person and an 8-foot-one person (they're both very very tall). 
+First we'll fix the observation with CSS code by manually overwriting the value using the original table. We'll also manually fix the observation that lists a height range ("8 ft 0 in-8 ft 1 in") since for our purposes, there's not much difference between an 8-foot person and an 8-foot-one person - they're both very, very tall. 
 
 ```{r}
 # manual fixes
@@ -124,7 +125,7 @@ tall_table_3$imperial
 
 ```
 
-Next, let's remove the un-needed reference numbers in brackets. We can do that manually, too, but it's not exactly a big-data approach, so let's use regular expressions (regexps) instead. 
+Next, we'll remove the un-needed reference numbers in brackets. We can do that manually, too, but it's not exactly a big-data approach, so let's use regular expressions (regexps) instead. 
 
 The challenge here is that brackets are a special character in regex, so we'll need to "escape" them (meaning, get R to understand that we mean a literal bracket). The `stringr` [cheat sheet](https://stringr.tidyverse.org/) serves as a great summary. You'll notice that to escape a bracket, you need a double backslash in front of it.
 
@@ -203,7 +204,7 @@ tall_table_8 <-
          ht_ft = round(as.numeric(ht_ft), digits = 2), 
          ht_ft = ht_ft + in_to_feet
   ) %>% 
-  select(-c(inches_fraction, inches, inches_1, inches_2, inches_decimal))
+  select(-c(inches_fraction, inches, inches_1, inches_2, inches_decimal, in_to_feet))
 
 ```
 
@@ -216,10 +217,87 @@ test <-
   mutate(check_ht = round(ht_ft*30.48, digits = 2))
 
 ```
-We're not dead on, but we got pretty close. The reason for the error has a lot more to do with significant digits in the original table than our text-parsing. And after all that work, our data-frame is 
+We're not dead on, but we got pretty close. The reason for the error has a lot more to do with rounding in the original table than our text-parsing. And after all that work, our data-frame is tidy-ish. 
+
+### `lifespan_age_at_death` and `note` Variables
+
+This is what the `lifespan_age_at_death` column looks like now: 
+```{r}
+tall_table_8 %>% 
+  select(lifespan_age_at_death)
+```
+
+We want the year of birth, year of death, and age at death to be their own variables. Scanning the values, there are several different scenarios: 
+1. Birth year - death year (YYYY-YYYY) followed by (age or age range)
+2. Range for birth year and death year (YYYY/YY - YYYY/YY)
+3. "born" followed by a year of birth (YYYY) and no death year
+4. Some text followed by "?" followed by a year
+5. Year of birth 
+6. "born" followed by a range and some text
+7. Some entries contain a reference number in brackets
+
+First we'll remove brackets and anything between them, addressing scenario 7. Then we'll populate an `age_at_death` variable by extracting anything in parentheses. 
+```{r}
+# define regular expression for any string between parentheses, not including a parenthesis
+regex_bet_paren <- "\\([^)]+\\)"
+
+tall_table_9 <- 
+  tall_table_8 %>% 
+  mutate(lifespan_age_at_death = str_remove_all(lifespan_age_at_death, "\\[\\d*\\]"), 
+         age_at_death = str_extract(lifespan_age_at_death, regex_bet_paren), 
+         lifespan_age_at_death = str_remove_all(lifespan_age_at_death, regex_bet_paren),
+         age_at_death = str_remove_all(age_at_death, "\\(|\\)"),  
+         lifespan_age_at_death = str_trim(lifespan_age_at_death, side = "both"),
+         age_at_death = str_trim(age_at_death, side = "both") 
+  )
+
+
+```
+Next we separate birth year and death year by the hyphen delimiter. Note the regexp meanings: 
+- `\\d*` means any quantity of consecutive digits 
+- `(?=–)` means something followed by a hyphen
+- `(?<=–)` means something following a hyphen
+```{r}
+tall_table_10 <- 
+  tall_table_9 %>% 
+  mutate(birth_year = str_extract(lifespan_age_at_death, "\\d*(?=–)"), 
+         death_year = str_extract(lifespan_age_at_death, "(?<=–)\\d*"))
+
+tall_table_10
+
+```
+Next we'll address scenario 3: "born" followed by a year of birth (YYYY) and no death year. We'll also make some manual fixes for a few observtions that don't translate using our rules. 
+```{r}
+# populate birth year using a number preceded by "born"
+tall_table_11 <- 
+  tall_table_10 %>% 
+  mutate(birth_year = if_else(is.na(birth_year), str_extract(lifespan_age_at_death, "(?<=born )\\d*"), birth_year))
+
+# manual fixes
+tall_table_12 <- 
+  tall_table_11 %>% 
+  mutate(birth_year = case_when(lifespan_age_at_death == "1958-1992" ~ "1958",
+                                lifespan_age_at_death == "c. born 1995" ~ "1995",
+                                lifespan_age_at_death == "1844-1899" ~"1844", 
+                                lifespan_age_at_death == "1946-1993" ~"1946",
+                                lifespan_age_at_death == "1880/85 – 1925/30" ~ "1880",
+                                TRUE ~ birth_year), 
+         death_year = case_when(lifespan_age_at_death == "1958-1992" ~ "1992", 
+                                lifespan_age_at_death == "fl.?-March 2019" ~ "2019", 
+                                lifespan_age_at_death == "1844-1899" ~ "1899",
+                                lifespan_age_at_death == "1946-1993" ~ "1993", 
+                                lifespan_age_at_death == "1880/85 – 1925/30" ~ "1925", TRUE ~ death_year))
+
+tall_table_12 %>% 
+  select(lifespan_age_at_death, birth_year, death_year) %>% 
+  filter(is.na(birth_year) | is.na(death_year))
+
+```
+
 
 ## Notes
 
+- good resource to cite: [Handling Strings with R](https://www.gastonsanchez.com/r4strings/index.html#r4strings) 
 - data source: https://en.wikipedia.org/wiki/List_of_tallest_people
 - The method of scraping Wikipedia data was motivated by this [book](https://www.gastonsanchez.com/r4strings/cleaning.html).  
 - remove units from height columns
