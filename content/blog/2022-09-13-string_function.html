@@ -1,0 +1,565 @@
+---
+title: "Cleaning Messy Strings Using stringr and Regexps"
+author: "Alice Tivarovsky"
+date: "2022-09-18"
+toc: true
+slug: strings-regexps
+output: blogdown::html_page
+tags:
+  - R
+  - Web Scraping
+  - Data Cleaning
+categories:
+  - R
+  - Web Scraping
+  - Data Cleaning
+---
+
+
+<div id="TOC">
+
+</div>
+
+<div id="motivation" class="section level2">
+<h2>Motivation</h2>
+<p>I recently completed several projects that involved cleaning lots of messy data, in particular, free text strings that I needed to organize into tidy variables and text-mine for insights. To do this efficiently, I learned how to use regular expressions (regexps), as suggested by Hadley Wickham and Garrett Grolemund’s in <a href="https://r4ds.had.co.nz/strings.html">R for Data Science</a>.</p>
+<p>As the authors suggest, it takes a little while to learn the rules of regexps and get comfortable using them, but once you do, you’ll see they’re a powerful tool to have in your data cleaning toolbox. The best resources I found for learning and practicing regexps are the RStudio <code>stringr</code> cheatsheet (found <a href="https://github.com/rstudio/cheatsheets/blob/main/strings.pdf">here</a>) and this handy interactive <a href="https://regexlearn.com/">program</a>.</p>
+<p>Below is a bit of practice with <code>stringr</code> and regexps using Wikipedia’s <a href="https://en.wikipedia.org/wiki/List_of_tallest_people">list of tallest people</a> on record. I realize this is not exactly a health topic, but it’s a simple motivating example that can be leveraged to any messy dataset containing strings. We’ll be using the <code>rvest</code> package to scrape an html table from the Wikipedia page, as outlined <a href="https://www.r-bloggers.com/2015/01/using-rvest-to-scrape-an-html-table/">here</a> and <a href="https://www.gastonsanchez.com/r4strings/cleaning.html">here</a>.</p>
+</div>
+<div id="import" class="section level2">
+<h2>Import</h2>
+<p>The original table looks like this:</p>
+<p><img src="/image/wiki_tall.jpeg" style="width:100.0%" /></p>
+<p>The steps below scrape the data using <code>rvest</code>.</p>
+<pre class="r"><code># wikipedia source url
+url &lt;- &#39;https://en.wikipedia.org/wiki/List_of_tallest_people&#39;
+
+# specify table
+tall_table &lt;- 
+  url %&gt;% 
+  read_html() %&gt;% 
+  html_nodes(xpath = (&#39;//*[@id=&quot;mw-content-text&quot;]/div[1]/table[2]&#39;)) %&gt;% 
+  html_table()
+               
+tall_table &lt;- 
+  tall_table[[1]] %&gt;% 
+  janitor::clean_names()
+
+tall_table %&gt;% 
+  select(c(metric, lifespan_age_at_death, imperial, note))</code></pre>
+<pre><code>## # A tibble: 143 × 4
+##    metric   lifespan_age_at_death imperial     note                             
+##    &lt;chr&gt;    &lt;chr&gt;                 &lt;chr&gt;        &lt;chr&gt;                            
+##  1 272 cm   1918–1940 (22)        8 ft 11.1 in Tallest human in recorded histor…
+##  2 269 cm   1989–2015 (26)        8 ft 10 in   Was not measured officially by G…
+##  3 268 cm   1986–2007 (21)        8 ft 9.5 in  Was not measured officially by G…
+##  4 267 cm   1868–1905 (37)        8 ft 9 in    Second tallest male in recorded …
+##  5 263.5 cm 1932–1969 (37)        8 ft 7.75 in 8 ft 0 in (244 cm) standing heig…
+##  6 262 cm   1924–1943 (18)        8 ft 7 in    Billed at 8 ft 7 in (262 cm).[16]
+##  7 262 cm   1906–1952 (46)        8 ft 7 in    Jacob Rheuben Ehrlich. American …
+##  8 258 cm   1860–1887 (27)        8 ft 5.5 in  Tallest human in European histor…
+##  9 258 cm   1970–2014 (44)        8 ft 5.5 in  Not officially recognized by Gui…
+## 10 257 cm   1984–2019 (34)        8 ft 5.25 in After he died he was measured po…
+## # … with 133 more rows</code></pre>
+<p>Clearly this requires some data cleaning. Specifically, we need to address the following problems: <br>
+- The variables <code>metric</code> and <code>imperial</code> mix numbers and text to express height in their respective units <br>
+- The <code>lifespan_age_at_death</code> variable combines three numeric variables into one column <br>
+- The <code>note</code> columns often contains reference numbers in brackets</p>
+</div>
+<div id="tidy" class="section level2">
+<h2>Tidy</h2>
+<div id="the-metric-variable" class="section level3">
+<h3>1. The <code>metric</code> Variable</h3>
+<p>First we’ll clean up <code>metric</code> by removing the “cm” on the end of every observation, converting it to a numeric variable, and updating the variable name.</p>
+<pre class="r"><code># remove &quot;cm&quot;
+tall_table_1 &lt;- 
+  tall_table %&gt;% 
+  mutate(metric = str_replace(metric, &quot;cm&quot;, &quot;&quot;))
+
+head(tall_table_1$metric)</code></pre>
+<pre><code>## [1] &quot;272 &quot;   &quot;269 &quot;   &quot;268 &quot;   &quot;267 &quot;   &quot;263.5 &quot; &quot;262 &quot;</code></pre>
+<p>Here we run into our first problem: trailing blanks. When we removed “cm” from the strings, we created phantom blanks, as evidenced by the space between the last digit and the end quote. These will prevent us from cleanly coercing the characters to numbers:</p>
+<pre class="r"><code>tall_table_test &lt;- 
+  tall_table_1 %&gt;% 
+  mutate(metric = as.numeric(metric))
+
+head(tall_table_test$metric)</code></pre>
+<pre><code>## [1] NA NA NA NA NA NA</code></pre>
+<p>This is very easy to fix with <code>str_trim</code>:</p>
+<pre class="r"><code># trim trailing blanks
+tall_table_2 &lt;- 
+  tall_table_1 %&gt;% 
+  mutate(metric = str_trim(metric, side = &quot;both&quot;), 
+         metric = as.numeric(metric)) %&gt;% 
+  rename(ht_cm = metric)
+  
+tall_table_2$ht_cm</code></pre>
+<pre><code>##   [1] 272.00 269.00 268.00 267.00 263.50 262.00 262.00 258.00 258.00 257.00
+##  [11] 256.00 255.00 251.40 251.00 250.00 248.90 248.90 246.00 246.00 246.00
+##  [21] 245.70 245.00 245.00 244.00 244.00 244.00 244.00 244.00 244.00 244.00
+##  [31] 242.00 242.00 242.00 242.00 241.00 241.00 240.00 240.00 240.00 239.00
+##  [41] 238.00 238.00 237.00 236.00 236.00 236.00 236.00 236.00 236.00 236.00
+##  [51] 236.00 232.00 236.00 236.17 236.10 232.00 235.90 233.50 235.00 235.00
+##  [61] 235.00 235.00 235.00 235.00 234.00 234.00 234.00 234.00 234.00 234.00
+##  [71] 234.00 234.00 234.00 234.00 234.00 233.00 233.00 233.00 233.00 233.00
+##  [81] 231.00 233.00 231.00 231.00 231.00 231.00 231.00 231.00 231.00 231.00
+##  [91] 231.00 230.00 230.00 229.00 229.00 229.00 229.00 229.00 229.00 229.00
+## [101] 229.00 229.00 229.00 229.00 229.00 229.00 229.00 229.00 229.00 229.00
+## [111] 229.00 228.00 228.00 228.00 228.00 228.00 227.00 226.00 226.00 226.00
+## [121] 226.00 226.00 226.00 225.00 225.00 225.00 225.00 224.00 224.00 223.00
+## [131] 222.00 222.00 222.00 221.00 221.00 221.00 221.00 221.00 218.00 218.00
+## [141] 218.00 216.00 210.00</code></pre>
+<p>Now we move on to the <code>imperial</code> variable, which takes on the following (un-tidy) values:</p>
+<pre class="r"><code>tall_table_2$imperial</code></pre>
+<pre><code>##   [1] &quot;8 ft 11.1 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##   [2] &quot;8 ft 10 in&quot;                                                                                                                                                                                                                                                                                                                                             
+##   [3] &quot;8 ft 9.5 in&quot;                                                                                                                                                                                                                                                                                                                                            
+##   [4] &quot;8 ft 9 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##   [5] &quot;8 ft 7.75 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##   [6] &quot;8 ft 7 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##   [7] &quot;8 ft 7 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##   [8] &quot;8 ft 5.5 in&quot;                                                                                                                                                                                                                                                                                                                                            
+##   [9] &quot;8 ft 5.5 in&quot;                                                                                                                                                                                                                                                                                                                                            
+##  [10] &quot;8 ft 5.25 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [11] &quot;8 ft 4.8 in&quot;                                                                                                                                                                                                                                                                                                                                            
+##  [12] &quot;8 ft 4.5 in&quot;                                                                                                                                                                                                                                                                                                                                            
+##  [13] &quot;8 ft 3 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [14] &quot;8 ft 2.8 in[25]&quot;                                                                                                                                                                                                                                                                                                                                        
+##  [15] &quot;8 ft 2.4 in&quot;                                                                                                                                                                                                                                                                                                                                            
+##  [16] &quot;8 ft 2 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [17] &quot;8 ft 2 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [18] &quot;8 ft 1 in[29]&quot;                                                                                                                                                                                                                                                                                                                                          
+##  [19] &quot;8 ft 1 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [20] &quot;8 ft 1 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [21] &quot;8 ft 0.75 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [22] &quot;8 ft 0.5 in&quot;                                                                                                                                                                                                                                                                                                                                            
+##  [23] &quot;8 ft 0.4 in&quot;                                                                                                                                                                                                                                                                                                                                            
+##  [24] &quot;8 ft 0 in-8 ft 1 in&quot;                                                                                                                                                                                                                                                                                                                                    
+##  [25] &quot;8 ft 0 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [26] &quot;8 ft 0 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [27] &quot;8 ft 0 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [28] &quot;8 ft 0 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [29] &quot;8 ft 0 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [30] &quot;8 ft 0 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [31] &quot;7 ft 11.5 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [32] &quot;7 ft 11.5 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [33] &quot;7 ft 11.5 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [34] &quot;7 ft 11.5 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [35] &quot;7 ft 11 in&quot;                                                                                                                                                                                                                                                                                                                                             
+##  [36] &quot;7 ft 11 in&quot;                                                                                                                                                                                                                                                                                                                                             
+##  [37] &quot;7 ft 10.5 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [38] &quot;7 ft 10.5 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [39] &quot;7 ft 10.5 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [40] &quot;7 ft 10 in&quot;                                                                                                                                                                                                                                                                                                                                             
+##  [41] &quot;7 ft 10 in&quot;                                                                                                                                                                                                                                                                                                                                             
+##  [42] &quot;7 ft 10 in&quot;                                                                                                                                                                                                                                                                                                                                             
+##  [43] &quot;7 ft 9.3 in&quot;                                                                                                                                                                                                                                                                                                                                            
+##  [44] &quot;7 ft 9 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [45] &quot;7 ft 9 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [46] &quot;7 ft 9 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [47] &quot;7 ft 9 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [48] &quot;7 ft 9 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [49] &quot;7 ft 9 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [50] &quot;7 ft 9 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [51] &quot;7 ft 9 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [52] &quot;7 ft 7.3 in&quot;                                                                                                                                                                                                                                                                                                                                            
+##  [53] &quot;7 ft 9 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [54] &quot;7 ft 8.98 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [55] &quot;7 ft 8.95 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [56] &quot;7 ft 7¼ in&quot;                                                                                                                                                                                                                                                                                                                                             
+##  [57] &quot;7 ft 8.87 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [58] &quot;7 ft .mw-parser-output .frac{white-space:nowrap}.mw-parser-output .frac .num,.mw-parser-output .frac .den{font-size:80%;line-height:0;vertical-align:super}.mw-parser-output .frac .den{vertical-align:sub}.mw-parser-output .sr-only{border:0;clip:rect(0,0,0,0);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px}8+1⁄3 in&quot;
+##  [59] &quot;7 ft 81⁄2 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [60] &quot;7 ft 81⁄2 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [61] &quot;7 ft 8+1⁄2 in&quot;                                                                                                                                                                                                                                                                                                                                          
+##  [62] &quot;7 ft 8+1⁄2 in&quot;                                                                                                                                                                                                                                                                                                                                          
+##  [63] &quot;7 ft 8 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [64] &quot;7 ft 8 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [65] &quot;7 ft 8 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [66] &quot;7 ft 8 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [67] &quot;7 ft 8 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [68] &quot;7 ft 8 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [69] &quot;7 ft 8 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [70] &quot;7 ft 8 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [71] &quot;7 ft 8 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [72] &quot;7 ft 8 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [73] &quot;7 ft 8 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [74] &quot;7 ft 8 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [75] &quot;7 ft 8 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [76] &quot;7 ft 7.7 in&quot;                                                                                                                                                                                                                                                                                                                                            
+##  [77] &quot;7 ft 7.7 in&quot;                                                                                                                                                                                                                                                                                                                                            
+##  [78] &quot;7 ft 7+1⁄2 in&quot;                                                                                                                                                                                                                                                                                                                                          
+##  [79] &quot;7 ft 7.4 in&quot;                                                                                                                                                                                                                                                                                                                                            
+##  [80] &quot;7 ft 7.4 in&quot;                                                                                                                                                                                                                                                                                                                                            
+##  [81] &quot;7 ft 7.26 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [82] &quot;7 ft 7 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [83] &quot;7 ft 7 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [84] &quot;7 ft 7 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [85] &quot;7 ft 7 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [86] &quot;7 ft 7 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [87] &quot;7 ft 7 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [88] &quot;7 ft 7 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [89] &quot;7 ft 7 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [90] &quot;7 ft 7 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [91] &quot;7 ft 7 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [92] &quot;7 ft 7 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [93] &quot;7 ft 6.75 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [94] &quot;7 ft 6.25 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [95] &quot;7 ft 6.25 in&quot;                                                                                                                                                                                                                                                                                                                                           
+##  [96] &quot;7 ft 6+1⁄4 in&quot;                                                                                                                                                                                                                                                                                                                                          
+##  [97] &quot;7 ft 6+1⁄5 in&quot;                                                                                                                                                                                                                                                                                                                                          
+##  [98] &quot;7 ft 6 in&quot;                                                                                                                                                                                                                                                                                                                                              
+##  [99] &quot;7 ft 6 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [100] &quot;7 ft 6 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [101] &quot;7 ft 6 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [102] &quot;7 ft 6 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [103] &quot;7 ft 6 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [104] &quot;7 ft 6 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [105] &quot;7 ft 6 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [106] &quot;7 ft 6 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [107] &quot;7 ft 6 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [108] &quot;7 ft 6 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [109] &quot;7 ft 6 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [110] &quot;7 ft 6 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [111] &quot;7 ft 5.8 in&quot;                                                                                                                                                                                                                                                                                                                                            
+## [112] &quot;7 ft 5+2⁄3 in&quot;                                                                                                                                                                                                                                                                                                                                          
+## [113] &quot;7 ft 5+2⁄3 in&quot;                                                                                                                                                                                                                                                                                                                                          
+## [114] &quot;7 ft 5+2⁄3 in&quot;                                                                                                                                                                                                                                                                                                                                          
+## [115] &quot;7 ft 5+2⁄3 in&quot;                                                                                                                                                                                                                                                                                                                                          
+## [116] &quot;7 ft 5+2⁄3 in&quot;                                                                                                                                                                                                                                                                                                                                          
+## [117] &quot;7 ft 5+1⁄3&quot;                                                                                                                                                                                                                                                                                                                                             
+## [118] &quot;7 ft 5 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [119] &quot;7 ft 5 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [120] &quot;7 ft 5 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [121] &quot;7 ft 5 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [122] &quot;7 ft 5 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [123] &quot;7 ft 5 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [124] &quot;7 ft 4.5 in&quot;                                                                                                                                                                                                                                                                                                                                            
+## [125] &quot;7 ft 4+1⁄2 in&quot;                                                                                                                                                                                                                                                                                                                                          
+## [126] &quot;7 ft 4+1⁄2 in&quot;                                                                                                                                                                                                                                                                                                                                          
+## [127] &quot;7 ft 4.5 in&quot;                                                                                                                                                                                                                                                                                                                                            
+## [128] &quot;7 ft 4 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [129] &quot;7 ft 4 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [130] &quot;7 ft 4 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [131] &quot;7 ft 3.4 in&quot;                                                                                                                                                                                                                                                                                                                                            
+## [132] &quot;7 ft 3.5 in&quot;                                                                                                                                                                                                                                                                                                                                            
+## [133] &quot;7 ft 3.5 in&quot;                                                                                                                                                                                                                                                                                                                                            
+## [134] &quot;7 ft 3 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [135] &quot;7 ft 3 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [136] &quot;7 ft 3 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [137] &quot;7 ft 3 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [138] &quot;7 ft 3 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [139] &quot;7 ft 2 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [140] &quot;7 ft 2 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [141] &quot;7 ft 2 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [142] &quot;7 ft 1 in&quot;                                                                                                                                                                                                                                                                                                                                              
+## [143] &quot;7 ft 0 in&quot;</code></pre>
+<p>We’ve got numbers with brackets (links to footnotes in the original Wikipedia page), we’ve got some inches measures that look like “1.5 inches”, some that look like “1+1/2 in”, we have some that drop the plus (“81/2 in”, which should probably read “8 1/2 in”), and then we have one observation that seems to have carried over some style code.</p>
+<p>First we’ll fix the style code observation by manually overwriting the value using the original table. We’ll also manually fix the observation that lists a height range (“8 ft 0 in-8 ft 1 in”) since for our purposes, there’s not much difference between an 8-foot person and an 8-foot-one person - they’re both very, very tall.</p>
+<pre class="r"><code># manual fixes
+tall_table_3 &lt;- 
+  tall_table_2 %&gt;% 
+  mutate(imperial = 
+           case_when(name == &quot;Rafael França do Nascimento&quot; ~ &quot;7 ft 8+1⁄3 in&quot;, 
+                     name == &quot;James Toller&quot; ~ &quot;8 ft 0 in&quot;, 
+                     TRUE ~ imperial) , 
+         imperial = str_trim(imperial, side = &quot;both&quot;)
+  )
+
+tall_table_3$imperial</code></pre>
+<pre><code>##   [1] &quot;8 ft 11.1 in&quot;    &quot;8 ft 10 in&quot;      &quot;8 ft 9.5 in&quot;     &quot;8 ft 9 in&quot;      
+##   [5] &quot;8 ft 7.75 in&quot;    &quot;8 ft 7 in&quot;       &quot;8 ft 7 in&quot;       &quot;8 ft 5.5 in&quot;    
+##   [9] &quot;8 ft 5.5 in&quot;     &quot;8 ft 5.25 in&quot;    &quot;8 ft 4.8 in&quot;     &quot;8 ft 4.5 in&quot;    
+##  [13] &quot;8 ft 3 in&quot;       &quot;8 ft 2.8 in[25]&quot; &quot;8 ft 2.4 in&quot;     &quot;8 ft 2 in&quot;      
+##  [17] &quot;8 ft 2 in&quot;       &quot;8 ft 1 in[29]&quot;   &quot;8 ft 1 in&quot;       &quot;8 ft 1 in&quot;      
+##  [21] &quot;8 ft 0.75 in&quot;    &quot;8 ft 0.5 in&quot;     &quot;8 ft 0.4 in&quot;     &quot;8 ft 0 in&quot;      
+##  [25] &quot;8 ft 0 in&quot;       &quot;8 ft 0 in&quot;       &quot;8 ft 0 in&quot;       &quot;8 ft 0 in&quot;      
+##  [29] &quot;8 ft 0 in&quot;       &quot;8 ft 0 in&quot;       &quot;7 ft 11.5 in&quot;    &quot;7 ft 11.5 in&quot;   
+##  [33] &quot;7 ft 11.5 in&quot;    &quot;7 ft 11.5 in&quot;    &quot;7 ft 11 in&quot;      &quot;7 ft 11 in&quot;     
+##  [37] &quot;7 ft 10.5 in&quot;    &quot;7 ft 10.5 in&quot;    &quot;7 ft 10.5 in&quot;    &quot;7 ft 10 in&quot;     
+##  [41] &quot;7 ft 10 in&quot;      &quot;7 ft 10 in&quot;      &quot;7 ft 9.3 in&quot;     &quot;7 ft 9 in&quot;      
+##  [45] &quot;7 ft 9 in&quot;       &quot;7 ft 9 in&quot;       &quot;7 ft 9 in&quot;       &quot;7 ft 9 in&quot;      
+##  [49] &quot;7 ft 9 in&quot;       &quot;7 ft 9 in&quot;       &quot;7 ft 9 in&quot;       &quot;7 ft 7.3 in&quot;    
+##  [53] &quot;7 ft 9 in&quot;       &quot;7 ft 8.98 in&quot;    &quot;7 ft 8.95 in&quot;    &quot;7 ft 7¼ in&quot;     
+##  [57] &quot;7 ft 8.87 in&quot;    &quot;7 ft 8+1⁄3 in&quot;   &quot;7 ft 81⁄2 in&quot;    &quot;7 ft 81⁄2 in&quot;   
+##  [61] &quot;7 ft 8+1⁄2 in&quot;   &quot;7 ft 8+1⁄2 in&quot;   &quot;7 ft 8 in&quot;       &quot;7 ft 8 in&quot;      
+##  [65] &quot;7 ft 8 in&quot;       &quot;7 ft 8 in&quot;       &quot;7 ft 8 in&quot;       &quot;7 ft 8 in&quot;      
+##  [69] &quot;7 ft 8 in&quot;       &quot;7 ft 8 in&quot;       &quot;7 ft 8 in&quot;       &quot;7 ft 8 in&quot;      
+##  [73] &quot;7 ft 8 in&quot;       &quot;7 ft 8 in&quot;       &quot;7 ft 8 in&quot;       &quot;7 ft 7.7 in&quot;    
+##  [77] &quot;7 ft 7.7 in&quot;     &quot;7 ft 7+1⁄2 in&quot;   &quot;7 ft 7.4 in&quot;     &quot;7 ft 7.4 in&quot;    
+##  [81] &quot;7 ft 7.26 in&quot;    &quot;7 ft 7 in&quot;       &quot;7 ft 7 in&quot;       &quot;7 ft 7 in&quot;      
+##  [85] &quot;7 ft 7 in&quot;       &quot;7 ft 7 in&quot;       &quot;7 ft 7 in&quot;       &quot;7 ft 7 in&quot;      
+##  [89] &quot;7 ft 7 in&quot;       &quot;7 ft 7 in&quot;       &quot;7 ft 7 in&quot;       &quot;7 ft 7 in&quot;      
+##  [93] &quot;7 ft 6.75 in&quot;    &quot;7 ft 6.25 in&quot;    &quot;7 ft 6.25 in&quot;    &quot;7 ft 6+1⁄4 in&quot;  
+##  [97] &quot;7 ft 6+1⁄5 in&quot;   &quot;7 ft 6 in&quot;       &quot;7 ft 6 in&quot;       &quot;7 ft 6 in&quot;      
+## [101] &quot;7 ft 6 in&quot;       &quot;7 ft 6 in&quot;       &quot;7 ft 6 in&quot;       &quot;7 ft 6 in&quot;      
+## [105] &quot;7 ft 6 in&quot;       &quot;7 ft 6 in&quot;       &quot;7 ft 6 in&quot;       &quot;7 ft 6 in&quot;      
+## [109] &quot;7 ft 6 in&quot;       &quot;7 ft 6 in&quot;       &quot;7 ft 5.8 in&quot;     &quot;7 ft 5+2⁄3 in&quot;  
+## [113] &quot;7 ft 5+2⁄3 in&quot;   &quot;7 ft 5+2⁄3 in&quot;   &quot;7 ft 5+2⁄3 in&quot;   &quot;7 ft 5+2⁄3 in&quot;  
+## [117] &quot;7 ft 5+1⁄3&quot;      &quot;7 ft 5 in&quot;       &quot;7 ft 5 in&quot;       &quot;7 ft 5 in&quot;      
+## [121] &quot;7 ft 5 in&quot;       &quot;7 ft 5 in&quot;       &quot;7 ft 5 in&quot;       &quot;7 ft 4.5 in&quot;    
+## [125] &quot;7 ft 4+1⁄2 in&quot;   &quot;7 ft 4+1⁄2 in&quot;   &quot;7 ft 4.5 in&quot;     &quot;7 ft 4 in&quot;      
+## [129] &quot;7 ft 4 in&quot;       &quot;7 ft 4 in&quot;       &quot;7 ft 3.4 in&quot;     &quot;7 ft 3.5 in&quot;    
+## [133] &quot;7 ft 3.5 in&quot;     &quot;7 ft 3 in&quot;       &quot;7 ft 3 in&quot;       &quot;7 ft 3 in&quot;      
+## [137] &quot;7 ft 3 in&quot;       &quot;7 ft 3 in&quot;       &quot;7 ft 2 in&quot;       &quot;7 ft 2 in&quot;      
+## [141] &quot;7 ft 2 in&quot;       &quot;7 ft 1 in&quot;       &quot;7 ft 0 in&quot;</code></pre>
+<p>Next, we’ll remove the un-needed reference numbers in brackets. We can do that manually, too, but it’s not exactly a big-data approach, so let’s use regular expressions (regexps) instead.</p>
+<p>The challenge here is that brackets are a special character in regex, so we’ll need to “escape” them (meaning, get R to understand that we mean a literal bracket). The <code>stringr</code> <a href="https://stringr.tidyverse.org/">cheat sheet</a> serves as a great summary. You’ll notice that to escape a bracket, you need a double backslash in front of it.</p>
+<p>Here’s a demo of how it works:</p>
+<pre class="r"><code># demonstrate regexps
+tall_table_3 %&gt;% 
+  mutate(test = str_extract(imperial, &quot;\\[\\d*\\]&quot;)) %&gt;% 
+  filter(str_detect(imperial, &quot;\\[\\d*\\]&quot;)) %&gt;% 
+  select(imperial, test)</code></pre>
+<pre><code>## # A tibble: 2 × 2
+##   imperial        test 
+##   &lt;chr&gt;           &lt;chr&gt;
+## 1 8 ft 2.8 in[25] [25] 
+## 2 8 ft 1 in[29]   [29]</code></pre>
+<pre class="r"><code>tall_table_4 &lt;- 
+  tall_table_3 %&gt;% 
+  mutate(imperial = str_remove(imperial, &quot;\\[\\d*\\]&quot;))</code></pre>
+<p>Next, we need to separate the feet and inches values so we can convert to a value like XX.XX inches, allowing us to do numerical manipulation on the value. The pattern in <code>imperial</code> is now “X ft XX in”, where the inches are expressed in different ways (1/2, 0.5). Let’s do inches first. We want to extract out the number that lies between “ft” and “in”. For this, we can use “look around” regexps, that find a pattern preceding or following another pattern. Roughly speaking: <br>
+- “a(?=c)” means “a” followed by “c” <br>
+- “(?&lt;=b)a” means “a” preceded by “b” <br>
+- Note that “[:graph:]” means any letter, number, or punctuation, and the asterisk after it means repeated zero ore more times.</p>
+<pre class="r"><code># demo
+tall_table_4 %&gt;% 
+  mutate(inches = str_extract(imperial, &quot;(?&lt;=ft)\\s[:graph:]*\\s(?=in)&quot;)) %&gt;% 
+  select(imperial, inches) </code></pre>
+<pre><code>## # A tibble: 143 × 2
+##    imperial     inches  
+##    &lt;chr&gt;        &lt;chr&gt;   
+##  1 8 ft 11.1 in &quot; 11.1 &quot;
+##  2 8 ft 10 in   &quot; 10 &quot;  
+##  3 8 ft 9.5 in  &quot; 9.5 &quot; 
+##  4 8 ft 9 in    &quot; 9 &quot;   
+##  5 8 ft 7.75 in &quot; 7.75 &quot;
+##  6 8 ft 7 in    &quot; 7 &quot;   
+##  7 8 ft 7 in    &quot; 7 &quot;   
+##  8 8 ft 5.5 in  &quot; 5.5 &quot; 
+##  9 8 ft 5.5 in  &quot; 5.5 &quot; 
+## 10 8 ft 5.25 in &quot; 5.25 &quot;
+## # … with 133 more rows</code></pre>
+<pre class="r"><code># extract inches value and remove everything from &quot;ft&quot; onward  
+tall_table_5 &lt;- 
+  tall_table_4 %&gt;% 
+  mutate(inches = str_extract(imperial, &quot;(?&lt;=ft)\\s[:graph:]*\\s(?=in)&quot;),
+         imperial = str_remove(imperial, &quot;\\s(ft)\\s[:graph:]*\\s[:graph:]*&quot;)) %&gt;% 
+  rename(ht_ft = imperial)
+
+# trim white-space
+tall_table_6 &lt;- 
+  tall_table_5 %&gt;% 
+  mutate(inches = str_trim(inches, side = c(&quot;both&quot;)), 
+         ht_ft = str_trim(ht_ft, side = c(&quot;both&quot;)))</code></pre>
+<p>Now, we get to the most challenging part: transforming <code>inches</code> into a numerical variable. This means converting numbers written as fractions into decimals, while not transforming the already-clean decimal values. The simplest way to do this is probably to find a forward-slash (/), and find the numbers immediately before and after it. After that, we’ll separate out the numbers and divide them to arrive at a final, numerical <code>inches_decimal</code>.</p>
+<pre class="r"><code># clean inches variable
+tall_table_7 &lt;- 
+  tall_table_6 %&gt;% 
+  mutate(inches_fraction = str_extract(inches, &quot;\\d\\⁄\\d&quot;), 
+         inches = str_remove(inches, &quot;\\d\\⁄\\d&quot;), 
+         inches = str_remove(inches, &quot;\\+&quot;), 
+         inches = str_trim(inches, side = c(&quot;both&quot;))) %&gt;% 
+  mutate(inches_1 = as.numeric(str_sub(inches_fraction, 1, 1)), 
+         inches_2 = as.numeric(str_sub(inches_fraction, -1, -1)), 
+         inches_decimal = round((inches_1/inches_2), digits = 2))
+
+# demo
+tall_table_7 %&gt;% 
+  filter(!is.na(inches_decimal)) %&gt;% 
+  select(inches, inches_fraction, inches_1, inches_2, inches_decimal) </code></pre>
+<pre><code>## # A tibble: 15 × 5
+##    inches inches_fraction inches_1 inches_2 inches_decimal
+##    &lt;chr&gt;  &lt;chr&gt;              &lt;dbl&gt;    &lt;dbl&gt;          &lt;dbl&gt;
+##  1 8      1⁄3                    1        3           0.33
+##  2 8      1⁄2                    1        2           0.5 
+##  3 8      1⁄2                    1        2           0.5 
+##  4 8      1⁄2                    1        2           0.5 
+##  5 8      1⁄2                    1        2           0.5 
+##  6 7      1⁄2                    1        2           0.5 
+##  7 6      1⁄4                    1        4           0.25
+##  8 6      1⁄5                    1        5           0.2 
+##  9 5      2⁄3                    2        3           0.67
+## 10 5      2⁄3                    2        3           0.67
+## 11 5      2⁄3                    2        3           0.67
+## 12 5      2⁄3                    2        3           0.67
+## 13 5      2⁄3                    2        3           0.67
+## 14 4      1⁄2                    1        2           0.5 
+## 15 4      1⁄2                    1        2           0.5</code></pre>
+<p>Finally, we will add <code>inches</code> to <code>inches_decimal</code> to arrive at the final portion of height in inches. We’ll also address the outlier “7¼” inches. Then, we’ll convert the now-clean <code>inches</code> to feet, and add it to <code>ht_ft</code>.</p>
+<pre class="r"><code>tall_table_8 &lt;- 
+  tall_table_7 %&gt;% 
+  mutate(inches = if_else(inches == &quot;7¼&quot;, &quot;7.25&quot;, inches), 
+         inches = as.numeric(inches), 
+         inches = if_else(is.na(inches), 0, inches), 
+         in_to_feet = round((inches/12), digits = 2), 
+         ht_ft = if_else(name ==  &quot;Jeison Rodríguez&quot;, &quot;7.44&quot;, ht_ft),
+         ht_ft = round(as.numeric(ht_ft), digits = 2), 
+         ht_ft = ht_ft + in_to_feet
+  ) %&gt;% 
+  select(-c(inches_fraction, inches, inches_1, inches_2, inches_decimal, in_to_feet))</code></pre>
+<p>Now we can do a fun exercise - we can check our work by directly converting <code>ht_cm</code> to height in feet (one foot is 30.48 cm), and seeing if all the wrangling we underwent with inches and feet gave us correct numbers.</p>
+<pre class="r"><code># test whether calculated value matches string extract
+test &lt;-
+  tall_table_8 %&gt;% 
+  select(ht_ft, ht_cm) %&gt;% 
+  mutate(check_ht = round(ht_ft*30.48, digits = 2))
+
+test</code></pre>
+<pre><code>## # A tibble: 143 × 3
+##    ht_ft ht_cm check_ht
+##    &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
+##  1  8.92  272      272.
+##  2  8.83  269      269.
+##  3  8.79  268      268.
+##  4  8.75  267      267.
+##  5  8.65  264.     264.
+##  6  8.58  262      262.
+##  7  8.58  262      262.
+##  8  8.46  258      258.
+##  9  8.46  258      258.
+## 10  8.44  257      257.
+## # … with 133 more rows</code></pre>
+<p>We’re not dead on, but we got pretty close. The reason for the error has a lot more to do with rounding in the original table than our text-parsing. And after all that work, our data-frame is tidy-ish.</p>
+</div>
+<div id="the-lifespan_age_at_death-variable" class="section level3">
+<h3>2. The <code>lifespan_age_at_death</code> Variable</h3>
+<p>This is what the <code>lifespan_age_at_death</code> column looks like now:</p>
+<pre class="r"><code>tall_table_8 %&gt;% 
+  select(lifespan_age_at_death)</code></pre>
+<pre><code>## # A tibble: 143 × 1
+##    lifespan_age_at_death
+##    &lt;chr&gt;                
+##  1 1918–1940 (22)       
+##  2 1989–2015 (26)       
+##  3 1986–2007 (21)       
+##  4 1868–1905 (37)       
+##  5 1932–1969 (37)       
+##  6 1924–1943 (18)       
+##  7 1906–1952 (46)       
+##  8 1860–1887 (27)       
+##  9 1970–2014 (44)       
+## 10 1984–2019 (34)       
+## # … with 133 more rows</code></pre>
+<p>We want the year of birth, year of death, and age at death to be their own variables. Scanning the values, there are several different scenarios: <br>
+1. Birth year - death year (YYYY-YYYY) followed by (age or age range) <br>
+2. Range for birth year and death year (YYYY/YY - YYYY/YY) <br>
+3. “born” followed by a year of birth (YYYY) and no death year <br>
+4. Some text followed by “?” followed by a year <br>
+5. Year of birth <br>
+6. “born” followed by a range and some text <br>
+7. Some entries contain a reference number in brackets</p>
+<p>First we’ll remove brackets and anything between them, addressing scenario 7. Then we’ll populate an <code>age_at_death</code> variable by extracting anything in parentheses.</p>
+<pre class="r"><code># define regular expression for any string between parentheses, not including a parenthesis
+regex_bet_paren &lt;- &quot;\\([^)]+\\)&quot;
+
+tall_table_9 &lt;- 
+  tall_table_8 %&gt;% 
+  mutate(lifespan_age_at_death = str_remove_all(lifespan_age_at_death, &quot;\\[\\d*\\]&quot;), 
+         age_at_death = str_extract(lifespan_age_at_death, regex_bet_paren), 
+         lifespan_age_at_death = str_remove_all(lifespan_age_at_death, regex_bet_paren),
+         age_at_death = str_remove_all(age_at_death, &quot;\\(|\\)&quot;),  
+         lifespan_age_at_death = str_trim(lifespan_age_at_death, side = &quot;both&quot;),
+         age_at_death = str_trim(age_at_death, side = &quot;both&quot;), 
+         age_at_death = if_else(age_at_death == &quot;aged 24 as of March 2022&quot;, &quot;&quot;, age_at_death)
+  )</code></pre>
+<p>Next we separate birth year and death year by the hyphen delimiter. Note the regexp meanings: <br>
+- <code>\\d*</code> means any quantity of consecutive digits <br>
+- <code>(?=–)</code> means something followed by a hyphen <br>
+- <code>(?&lt;=–)</code> means something following a hyphen <br></p>
+<pre class="r"><code>tall_table_10 &lt;- 
+  tall_table_9 %&gt;% 
+  mutate(birth_year = str_extract(lifespan_age_at_death, &quot;\\d*(?=–)&quot;), 
+         death_year = str_extract(lifespan_age_at_death, &quot;(?&lt;=–)\\d*&quot;))
+
+tall_table_10</code></pre>
+<pre><code>## # A tibble: 143 × 9
+##    country       ht_cm ht_ft name          note  lifes…¹ age_a…² birth…³ death…⁴
+##    &lt;chr&gt;         &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;         &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;  
+##  1 United States  272   8.92 Robert Wadlow Tall… 1918–1… 22      1918    1940   
+##  2 Thailand       269   8.83 Pornchai Sao… Was … 1989–2… 26      1989    2015   
+##  3 India          268   8.79 Vikas Uppal   Was … 1986–2… 21      1986    2007   
+##  4 United States  267   8.75 John Rogan    Seco… 1868–1… 37      1868    1905   
+##  5 United States  264.  8.65 John F. Carr… 8 ft… 1932–1… 37      1932    1969   
+##  6 United States  262   8.58 Willie Camper Bill… 1924–1… 18      1924    1943   
+##  7 United States  262   8.58 Jack Earle    Jaco… 1906–1… 46      1906    1952   
+##  8 Austria        258   8.46 Franz Winkel… Tall… 1860–1… 27      1860    1887   
+##  9 Ukraine        258   8.46 Leonid Stadn… Not … 1970–2… 44      1970    2014   
+## 10 Vietnam        257   8.44 Hồ Văn Trung  Afte… 1984–2… 34      1984    2019   
+## # … with 133 more rows, and abbreviated variable names ¹​lifespan_age_at_death,
+## #   ²​age_at_death, ³​birth_year, ⁴​death_year</code></pre>
+<p>Next we’ll address scenario 3: “born” followed by a year of birth (YYYY) and no death year. We’ll also make some manual fixes for a few observtions that don’t translate using our rules.</p>
+<pre class="r"><code># populate birth year using a number preceded by &quot;born&quot;
+tall_table_11 &lt;- 
+  tall_table_10 %&gt;% 
+  mutate(birth_year = if_else(is.na(birth_year), str_extract(lifespan_age_at_death, &quot;(?&lt;=born )\\d*&quot;), birth_year))</code></pre>
+<pre class="r"><code># manual fixes
+tall_table_12 &lt;- 
+  tall_table_11 %&gt;% 
+  mutate(birth_year = case_when(lifespan_age_at_death == &quot;1958-1992&quot; ~ &quot;1958&quot;,
+                                lifespan_age_at_death == &quot;c. born 1995&quot; ~ &quot;1995&quot;,
+                                lifespan_age_at_death == &quot;1844-1899&quot; ~&quot;1844&quot;, 
+                                lifespan_age_at_death == &quot;1946-1993&quot; ~&quot;1946&quot;,
+                                lifespan_age_at_death == &quot;1880/85 – 1925/30&quot; ~ &quot;1880&quot;,
+                                TRUE ~ birth_year), 
+         death_year = case_when(lifespan_age_at_death == &quot;1958-1992&quot; ~ &quot;1992&quot;, 
+                                lifespan_age_at_death == &quot;fl.?-March 2019&quot; ~ &quot;2019&quot;, 
+                                lifespan_age_at_death == &quot;1844-1899&quot; ~ &quot;1899&quot;,
+                                lifespan_age_at_death == &quot;1946-1993&quot; ~ &quot;1993&quot;, 
+                                lifespan_age_at_death == &quot;1880/85 – 1925/30&quot; ~ &quot;1925&quot;, TRUE ~ death_year)) %&gt;% 
+  mutate(birth_year = as.numeric(birth_year), 
+         death_year = as.numeric(death_year)) %&gt;% 
+  filter(!lifespan_age_at_death == &quot;173–238&quot;)
+
+
+# check
+tall_table_12 %&gt;% 
+  select(lifespan_age_at_death, birth_year, death_year) %&gt;% 
+  filter(is.na(birth_year) | is.na(death_year))</code></pre>
+<pre><code>## # A tibble: 65 × 3
+##    lifespan_age_at_death birth_year death_year
+##    &lt;chr&gt;                      &lt;dbl&gt;      &lt;dbl&gt;
+##  1 born 1982                   1982         NA
+##  2 born 1982                   1982         NA
+##  3 born 1987                   1987         NA
+##  4 born 1983                   1983         NA
+##  5 1835–?                      1835         NA
+##  6 born 1987                   1987         NA
+##  7 born 1994                   1994         NA
+##  8 born 1999                   1999         NA
+##  9 fl. ?–1596                    NA       1596
+## 10 born 1966                   1966         NA
+## # … with 55 more rows</code></pre>
+</div>
+<div id="the-note-variable" class="section level3">
+<h3>3. The <code>note</code> Variable</h3>
+<p>Finally, we’ll clean up <code>note</code> by removing anything between brackets.</p>
+<pre class="r"><code># clean note variable
+tall_table_13 &lt;- 
+  tall_table_12 %&gt;% 
+  mutate(note = str_remove_all(note, &quot;\\[\\d*\\]&quot;))
+
+tall_table_13</code></pre>
+<pre><code>## # A tibble: 142 × 9
+##    country       ht_cm ht_ft name          note  lifes…¹ age_a…² birth…³ death…⁴
+##    &lt;chr&gt;         &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;         &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+##  1 United States  272   8.92 Robert Wadlow Tall… 1918–1… 22         1918    1940
+##  2 Thailand       269   8.83 Pornchai Sao… Was … 1989–2… 26         1989    2015
+##  3 India          268   8.79 Vikas Uppal   Was … 1986–2… 21         1986    2007
+##  4 United States  267   8.75 John Rogan    Seco… 1868–1… 37         1868    1905
+##  5 United States  264.  8.65 John F. Carr… 8 ft… 1932–1… 37         1932    1969
+##  6 United States  262   8.58 Willie Camper Bill… 1924–1… 18         1924    1943
+##  7 United States  262   8.58 Jack Earle    Jaco… 1906–1… 46         1906    1952
+##  8 Austria        258   8.46 Franz Winkel… Tall… 1860–1… 27         1860    1887
+##  9 Ukraine        258   8.46 Leonid Stadn… Not … 1970–2… 44         1970    2014
+## 10 Vietnam        257   8.44 Hồ Văn Trung  Afte… 1984–2… 34         1984    2019
+## # … with 132 more rows, and abbreviated variable names ¹​lifespan_age_at_death,
+## #   ²​age_at_death, ³​birth_year, ⁴​death_year</code></pre>
+</div>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>That’s more or less all there is to it. If you’re working with big data, it’ll be a lot more challenging to account for all the patterns. But this example gives us an entry point to regular expressions and using them within the context of <code>stringr</code>.</p>
+<p>You can also learn a lot more about working with strings here: <a href="https://www.gastonsanchez.com/r4strings/index.html#r4strings">Handling Strings with R</a>.</p>
+</div>
