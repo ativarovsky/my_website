@@ -1,0 +1,82 @@
+---
+title: A Concept Map for Learning/Reviewing Statistics
+author: "Alice Tivarovsky"
+date: '2022-11-28'
+toc: true
+tags:
+  - Biostatistics
+categories:
+  - Biostatistics
+--- 
+
+## Motivation
+
+I was recently reflecting on my graduate school experience and trying to answer the "was it worth it" question. With the incredible amount of free educational resources online, why did I instead sacrifice my life's savings to the overlords of higher education? And now that I'm a few years out and in the "real world", do I think that money and time was worth it? 
+
+The short answer, for me, is yes. For one thing, it would have been tough to find a job as an Epidemiologist with no prior experience and a bachelor's degree in a totally different field. It gave me some credibility, a starter network, and a sense of what this field actually is and which parts of it I'm interested in.
+
+The other very valuable thing it provided was a "map" in my mind of the concepts we were taught. It's not that I remember every course (in fact, I've probably forgotten more than half of what I learned). But I have an idea of what concepts exist, a rough sense of how they relate to one another, and where to look when I'm solving a problem.
+
+It's kind of like an actual map. You probably don't know what cities exist in Iowa, or even the exact placement of the streets in your neighborhood. But you have some intuition of where your neighborhood is in your city, where your city is in the world, where Iowa is the U.S., and the details you can always find on an actual map. 
+
+I think this is an apt analogy for the educational value of my master's degree. Doing this online would have been tough. Piecing together a curriculum, finding quality courses, and having knowledgeable people around to answer questions was pretty valuable. 
+
+With that in mind, I endeavored to do a quick review of my statistics coursework - I enjoyed stats classes very much - and I figured the best way to do that would be to jot out a concept map. This ended up taking quite a bit longer than I thought - it's unsettling how much I forgot in 2.5 years. Nevertheless, it provided a very useful memory re-fresh, and gave a bit more resolution to that map floating in my mind. 
+
+## Concept Map
+
+Here's the semi-finished product. I will probably refine it over time, so we can call this a first draft. 
+
+![](/image/statistics.png){width=100%}
+
+## Brief Description
+
+Statistics is typically subdivided into __descriptive statistics__ and __inferential statistics__. Concepts in descriptive statistics are pretty straightforward, and will likely be the first thing you learn if you take a course. Inferential statistics is the more complicated branch. This is the set of concepts that allow us to take a sample, measure it, and use that sample to make statements about the population it came from. The tools of inferential statistics are largely founded on __probability theory__. 
+
+
+### Descriptive Statistics
+
+This branch provides tools to summarize your sample data using measures of location - mean, median, mode - and measures of spread, which include standard deviation and range. Appropriate visualizations for representing these measures (bar charts, boxplots, etc.) are often taught here. 
+
+### Inferential Statistics
+
+This is where things get more exciting. Inferential statistics allow us to make statements - inferences - about a population using a sample. 
+
+#### Estimation 
+
+Say I'm a 55-year-old male and I want to know my risk of being diagnosed with lung cancer. I can't possibly go out and survey the entire population of 55-year old males in the world and figure out how many have lung cancer, let alone figure out the entirety of their health history and risk factors. Instead I take a random sample, and use that sample to infer the risk to the population, and by extension, to me. 
+
+Making such a statement relies on the magic of inferential statistics. This magic is largely explained by the __Central Limit Theorem,__ which allows us to apply the very predictable, and therefore useful, __normal distribution__, to estimate the parameters of a very unknown population. 
+
+#### Hypothesis Testing
+
+One of the most useful consequences of the Central Limit Theorem is the ability to perform hypothesis testing. Hypothesis testing provides a set of methods for making conclusions based on knowledge of sample data and probability distributions. 
+
+There are two hypotheses in every hypothesis test: the null and the alternative. The __null hypothesis__ is the status quo - e.g people who got the vaccine got the disease just as much as people who didn't, vegetarians have the same distribution of cholesterol levels as meat-eaters, women who used a new birth control pill had as much risk of getting pregnant as women who use the existing pill, etc. The __alternative hypothesis__ is the opposite - the vaccine did prevent the disease, vegetarian diets lead to lower cholesterol levels, the new birth control pill was more effective than the existing version. 
+
+Hypothesis tests can be used to make conclusions about a single distribution __(one-sample inference)__, compare two distributions to each-other __(two-sample inference)__, or compare more than 2 distributions __(ANOVA)__. 
+
+The type of hypothesis test you perform depends on a) the research question you're posing (i.e. is my sample different from some known population? are two samples different from one another?) and b) the type of data you're working with (continuous, categorical, count). 
+
+#### Interval Estimation
+
+Not only can we make an estimate of a population parameter, we can also calculate how confident we are in that estimate. This is typically done using a __confidence interval__. Although conceptually somewhat confusing, the application is that a wide confidence interval indicates smaller sample size, which means less confidence in our estimate. A narrow interval means the opposite. 
+
+The best explanation of confidence intervals I've encountered is found [here](https://youtu.be/TqOeMYtOc1w), and goes through the explanation using bootstrapping, which is in itself pretty simple to understand.
+
+
+### Probability Theory 
+
+Probability theory underlies the magic of inferential statistics. As an applied scientist (data scientist, for instance), how much probability theory you want to master is up to you. I think the Probability chapter of [Fundamentals of Biostatistics](https://www.amazon.com/Fundamentals-Biostatistics-Bernard-Rosner/dp/130526892X), for instance, is adequate. But if you find it fun, I can recommend working through [Probability for the Enthusiastic Beginner](https://www.amazon.com/Probability-Enthusiastic-Beginner-David-Morin/dp/1523318678/ref=sr_1_1?s=books&ie=UTF8&qid=1459798110&sr=1-1&keywords=david+morin+probability). I also recommend this great summary [post](https://statsandr.com/blog/the-9-concepts-and-formulas-in-probability-that-every-data-scientist-should-know/). 
+
+
+## References
+- Rosner, B. (2015). Fundamentals of Biostatistics. 8th Edition. 
+- Boslaugh, S. (2012). Statistics in a Nutshell. 2nd Edition. O'Reilly Media. 
+- https://statisticsbyjim.com/hypothesis-testing/statistical-inference/
+
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+```
