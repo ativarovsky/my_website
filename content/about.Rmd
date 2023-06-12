@@ -22,11 +22,14 @@ For more details, please find me on [LinkedIn](https://www.linkedin.com/in/alice
 
 ### Professional
 
-#### Epidemiologist (Covid-19 Response) | Feb 2022 - Present | Los Angeles County Department of Public Health  
-- Clean, analyze, and manage all data received by the Education Sector on a daily basis (n = 500k)
-- Write, validate, and optimize data management and analysis programs using R, SQL, and SAS
-- Produce and maintain all unit data products, including public-facing [TK-12 School Covid-19 Data Dashboard](http://publichealth.lacounty.gov/media/coronavirus/education/index.htm) and internal Covid-19 report, containing summaries and in-depth analyses of all case data reported to Education Sector, for use by Public Health leadership
-- Serve as supervisor for Epi Analyst
+#### Data Science Epidemiologist | Jan 2023 - Present | Washington State Department of Health 
+- Quantify burden of Covid-19 using big data tools (Spark/DataBricks)
+
+#### Epidemiologist (Covid-19 Response) | Feb 2022 - Jan 2023 | Los Angeles County Department of Public Health  
+- Cleaned, analyzed, and managed all data received by the Education Sector on a daily basis (n = 500k)
+- Wrote, validated, and optimized data management and analysis programs using R, SQL, and SAS
+- Produced and maintained all unit data products, including public-facing [TK-12 School Covid-19 Data Dashboard](http://publichealth.lacounty.gov/media/coronavirus/education/index.htm) and internal Covid-19 report, containing summaries and in-depth analyses of all case data reported to Education Sector, for use by Public Health leadership
+- Served as supervisor for Epi Analyst
 
 #### Epidemiology Data Analyst (Covid-19 Response) | Sep 2020 - Feb 2022 | Los Angeles County Department of Public Health  
 - Built Covid-19 dashboards and reports using SAS and R; optimized programs and performed troubleshooting
