@@ -10,7 +10,7 @@ hasCJKLanguage = "yes"
 ignoreFiles = [ "\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$" ]
 
 [params]
-copyright = "© 2020-2022 Alice Tivarovsky"
+copyright = "© 2020-2023 Alice Tivarovsky"
 copyrightUrl = "/"
 email = "ativarovsky@gmail.com"
 faviconfile = "image/avatar.png"
