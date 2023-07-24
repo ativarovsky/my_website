@@ -1,0 +1,21 @@
+---
+title: Hospital Acquired Infections
+author: R package build
+date: '2023-07-23'
+slug: hospital-acquired-infections
+categories: []
+tags:
+  - one tag
+  - another tag
+meta_img: image/image.png
+description: Analysis of Hospital-Acquired Infections
+---
+ 
+ # Motivation 
+ 
+ # Background 
+ 
+ # Analysis
+ 
+ # Conclusions
+ 
