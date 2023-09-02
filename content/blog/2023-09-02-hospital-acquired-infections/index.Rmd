@@ -1,25 +1,27 @@
 ---
 title: Hospital Acquired Infections
-author: Package Build
+author: "Alice Tivarovsky"
 date: '2023-09-02'
 slug: hospital-acquired-infections
 categories: []
+toc: true
 tags:
-  - one tag
-  - another tag
+  - Healthcare
+  - R
 meta_img: image/image.png
-description: Description for the page.
+description: A Look at the Impact of Covid-19 on Hospital-Acquired Infections
 ---
 
- # Motivation 
+# Motivation 
  
- # Background 
+# Background 
  
- # Analysis
+# Analysis
  
- # Conclusions
+# Conclusions
  
- # References
+# References
+ 
  - https://www.cdc.gov/hai/pdfs/hai/Scott_CostPaper.pdf
  - https://www.cdc.gov/hai/data/portal/progress-report.html
  - https://www.cdc.gov/nhsn/pdfs/ps-analysis-resources/nhsn-sir-guide.pdf
