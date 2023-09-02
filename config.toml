@@ -1,12 +1,12 @@
 baseurl = "/"
 title = "Alice Tivarovsky"
 author = "Alice Tivarovsky"
-canonifyurls = "yes"
+#canonifyurls = "yes"
 languagecode = "en"
 paginate = 3
 theme = "hugo-renga"
-enableEmoji = "yes"
-hasCJKLanguage = "yes"
+#enableEmoji = "yes"
+#hasCJKLanguage = "yes"
 ignoreFiles = [ "\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$" ]
 
 [params]

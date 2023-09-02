@@ -1,16 +1,16 @@
 ---
 title: Hospital Acquired Infections
-author: R package build
-date: '2023-07-23'
+author: Package Build
+date: '2023-09-02'
 slug: hospital-acquired-infections
 categories: []
 tags:
   - one tag
   - another tag
 meta_img: image/image.png
-description: Analysis of Hospital-Acquired Infections
+description: Description for the page.
 ---
- 
+
  # Motivation 
  
  # Background 
@@ -25,5 +25,4 @@ description: Analysis of Hospital-Acquired Infections
  - https://www.cdc.gov/nhsn/pdfs/ps-analysis-resources/nhsn-sir-guide.pdf
  - https://www.altexsoft.com/blog/medical-datasets/
  - https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2803787#:~:text=Findings%20In%20a%20cross%2Dsectional,fold%20higher%20in%20the%20COVID
- 
  
