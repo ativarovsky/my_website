@@ -3,7 +3,6 @@ title: Hospital Acquired Infections
 author: "Alice Tivarovsky"
 date: '2023-09-02'
 slug: hospital-acquired-infections
-categories: []
 toc: true
 tags:
   - Healthcare
@@ -12,19 +11,24 @@ meta_img: image/image.png
 description: A Look at the Impact of Covid-19 on Hospital-Acquired Infections
 ---
 
-## Motivation 
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+```
+
+### Motivation 
  
-## Background 
+### Background 
  
-## Analysis
+### Analysis
  
-## Conclusions
+### Conclusions
  
-## References
+### References
  
  - https://www.cdc.gov/hai/pdfs/hai/Scott_CostPaper.pdf
  - https://www.cdc.gov/hai/data/portal/progress-report.html
  - https://www.cdc.gov/nhsn/pdfs/ps-analysis-resources/nhsn-sir-guide.pdf
  - https://www.altexsoft.com/blog/medical-datasets/
- - https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2803787#:~:text=Findings%20In%20a%20cross%2Dsectional,fold%20higher%20in%20the%20COVID
+ - [JAMA HAI Article](https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2803787#:~:text=Findings%20In%20a%20cross%2Dsectional,fold%20higher%20in%20the%20COVID)
  
