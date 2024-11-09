@@ -18,6 +18,8 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 This post is in progress. Stay tuned. 
 
+Testing....
+
 ### Motivation 
  
 ### Background 
