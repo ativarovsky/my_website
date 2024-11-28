@@ -8,11 +8,9 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-Below is a snapshot of my career thus far. The journey has been, shall we say, non-linear. But good stories always have some plot twists and turns. Today, I feel fortunate to work in a highly visible field, where I get to play with data, help policy-makers make decisions, and, with hope, leave a positive impact in the community. 
-
-For more details, please find me on [LinkedIn](https://www.linkedin.com/in/alice-tivarovsky-56281131/). 
 
 ***
+
 ### Education
 
 - University of California, Los Angeles | BS, Chemical Engineering
@@ -23,10 +21,10 @@ For more details, please find me on [LinkedIn](https://www.linkedin.com/in/alice
 ### Professional
 
 #### Senior Analyst, Data Science | Sep 2023 - Present | AltaMed Healthcare
-- Built data tools (SQL/Tableau, R/RStudio) to support clinicians in population health analysis
-- Validated probability models in predictive accuracy of emergency room and inpatient hospital utilization
-- Designed and implemented program evaluation framework to measure ROI of large-scale telehealth program
-- Built datasets and visualization tools to analyze utilization and cost in special cohorts (e.g. oncology patients)
+- Developed advanced data analytics tools using SQL, Tableau, R, and RStudio to support clinicians in conducting population health analyses.
+- Evaluated and validated probability models to assess the predictive accuracy of emergency room visits and inpatient hospital utilization.
+- Designed and implemented a comprehensive program evaluation framework to measure the return on investment (ROI) of a large-scale telehealth initiative.
+- Constructed and optimized datasets and visualization tools to analyze healthcare utilization and cost trends in specialized patient cohorts, including oncology populations.
 
 #### Data Science Epidemiologist | Jan 2023 - Sep 2023 | Washington State Department of Health 
 - Quantified burden of Covid-19 using big data tools (Spark/DataBricks)
@@ -67,3 +65,7 @@ For more details, please find me on [LinkedIn](https://www.linkedin.com/in/alice
 #### Chemical Engineer I | Oct 2009 - Aug 2012 | Johnson & Johnson  
 - Achieved 40% reduction in cycle times by re-designing multi-phase processes for single-phase production 
 - Re-designed and validated processes for 4 product formulas as part of Paraben elimination
+
+***
+For more details, please find me on [LinkedIn](https://www.linkedin.com/in/alice-tivarovsky-56281131/). 
+
