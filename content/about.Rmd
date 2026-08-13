@@ -20,7 +20,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Professional
 
-#### Senior Analyst, Data Science | Sep 2023 - Present | AltaMed Healthcare
+#### Sr Data Scientist | Sep 2023 - Present | AltaMed Healthcare
 - Developed advanced data analytics tools using SQL, Tableau, R, and RStudio to support clinicians in conducting population health analyses.
 - Evaluated and validated probability models to assess the predictive accuracy of emergency room visits and inpatient hospital utilization.
 - Designed and implemented a comprehensive program evaluation framework to measure the return on investment (ROI) of a large-scale telehealth initiative.
