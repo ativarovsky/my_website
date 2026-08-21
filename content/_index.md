@@ -11,5 +11,5 @@ I'm a Sr Data Scientist at [AltaMed](https://www.altamed.org/), ex-engineer, and
 
 I created this blog to explore health topics, deepen programming and data skills, showcase projects, and document useful tidbits I learned along the way. 
 
-Please refer to this [post](https://www.alicetivarovsky.com/blog/2020-07-06-hello-blog-world/) for more details on why and how this blog exists, and for more on my background, check out the [About](/about/) page. 
+For more on my backgound, please find [me on LinkedIn](https://www.linkedin.com/in/alicetivarovsky/), and for details on how/why this blog exists, check out this [post](https://www.alicetivarovsky.com/blog/2020-07-06-hello-blog-world/). 
 
