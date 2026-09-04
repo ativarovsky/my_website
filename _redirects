@@ -1,0 +1,32 @@
+# Netlify redirects: old Hugo/blogdown post URLs -> new Quarto post URLs.
+# Generated 2026-09-03. Old paths below are the VERIFIED live URLs (checked against the
+# production sitemap.xml and the /blog/ listing page), not the /:year/:month/:day/:slug/
+# pattern config.toml appears to specify -- that setting is keyed to a "post" section, but
+# the actual content section is "blog", so it never applied. The real, live URL scheme mixes
+# plain /blog/<slug>/ (when a post has an explicit slug: field) and /blog/<folder>/<slug>/
+# (for bundle posts), with no simplification to a single rule -- hence hand-verified below
+# rather than derived from config.
+
+/blog/2020-07-06-hello-blog-world/                              /posts/hello-blog-world/        301
+/blog/phthalates-i/                                              /posts/phthalates-i/            301
+/blog/phthalates-ii/                                             /posts/phthalates-ii/           301
+/blog/car-crashes/                                               /posts/car-crashes/             301
+/blog/import-function/                                           /posts/read-func/               301
+/blog/regression-life-expectancy/                                /posts/regression/               301
+/blog/2022-01-30-comp-epi-curve/                                 /posts/comp-epi-curve/          301
+/blog/strings-regexps/                                           /posts/string-func/             301
+/blog/2022-11-28-stats-concept-map/                              /posts/stats-concept-map/       301
+/blog/2020-08-05-covid-dashboard/covid-dash/                     /posts/covid-dashboard/         301
+/blog/2020-08-24-correlation-happiness/correlataion-happiness/   /posts/correlation-happiness/   301
+/blog/2022-08-25-leaflet_pollution/leaflet-pollution/            /posts/leaflet-pollution/       301
+/blog/2022-09-18-plotly-buttons/plotly-buttons/                  /posts/plotly-buttons/          301
+
+# Blog listing page -> new homepage (homepage = the blog listing itself, per Step 4)
+/blog/                                                            /                               301
+
+/resources/                                                       /posts/useful-resources/       301
+
+# NOT included yet: /blog/hospital-acquired-infections/ -- that post is still on hold
+# (Step 5, tracker #15) and has no posts/hospital-acquired-infections/ folder on the Quarto
+# side yet. Add a rule here (same pattern as above) once it's actually written and converted --
+# redirecting to a page that doesn't exist yet just trades one 404 for another.

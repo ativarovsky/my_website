@@ -1,0 +1,26 @@
+---
+title: "Hello (blog)world"
+author: "Alice Tivarovsky"
+date: "2020-07-06"
+categories: [R, Blogging]
+---
+
+## Why I created this blog
+
+I created this blog in 2020 as I was (remotely) finishing my master's degree at Columbia. I had four reasons for making it.
+
+First, I had really enjoyed my program, particularly the data science and biostatistics courses, and wanted to maintain the momentum of continuous learning.
+
+Second, I wanted to get deeper with R, practice analyzing data and drawing conclusions, and think of interesting and appropriate ways to present those conclusions.
+
+Third, I was nervous to forget what I'd learned, and was looking for ways to practice foundational topics outside of a classroom setting.
+
+Finally, it was the beginning of the pandemic, and after having achieved a viable sourdough starter, cultivating a few houseplants, and attempting (unsuccessfully) to cut my own hair, starting a blog was the next item on the quarantine to-do list.
+
+## How I created this blog
+
+As someone who had no experience in web development, I will admit that the learning curve was steep. I initially built this blog using [Jekyll](https://jekyllrb.com/) and [GitHub Pages](https://pages.github.com/), but in general, I found the workflows to be confusing and troublesome. I was running into problems with git errors and gem file updates - things would break for reasons I couldn't understand and sometimes couldn't google my way out of. I clearly recall some panicky sleepless nights of blog-wrangling, shoving pretzels into my face while hopelessly sifting through StackOverflow.
+
+After a few years, I migrated to Hugo/blogdown, and that left me with a much more R-friendly and less anxiety-inducing workflow. Honestly, I should have started there to begin with.
+
+But over time, as I got deeper in my data science career and more interested in learning Python, the flexibility of Quarto began to look appealing. So in 2026, I migrated to a Quarto workflow. This time, AI tools were available, so I asked Claude to give me a step by step process to follow to migrate my blog over to Quarto. It was freakishly helpful. And that's about it.

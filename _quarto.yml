@@ -1,0 +1,23 @@
+project:
+  type: website
+
+website:
+  title: "Alice Tivarovsky"
+  description: "I created this blog to explore health topics, deepen programming and data skills, showcase projects, and document useful tidbits I learned along the way."
+  site-url: "https://www.alicetivarovsky.com"
+  favicon: favicon.png
+  page-footer:
+    left: "© 2020-2026 Alice Tivarovsky"
+  navbar:
+    right:
+      - about.qmd
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+    css: styles.css
+
+resources:
+  - _redirects
