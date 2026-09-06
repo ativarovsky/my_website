@@ -2,7 +2,6 @@
 title: Modeling Global Life Expectancy vs Education  using  Least Squares Regression
 author: "Alice Tivarovsky"
 date: '2020-09-10'
-slug: regression
 description: "OLS in action"
 toc: true
 #image: "thumbnail.png"

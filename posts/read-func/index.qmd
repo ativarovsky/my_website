@@ -3,7 +3,6 @@ title: "Importing Data Files using stringr and purrr"
 author: "Alice Tivarovsky"
 date: '2020-09-05'
 toc: true
-slug: read-func
 description: "A reusable function to iteratively read in data files."
 image: "purrr_thumbnail.png"
 categories:

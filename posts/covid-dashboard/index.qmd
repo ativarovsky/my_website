@@ -2,7 +2,6 @@
 title: "Summarizing Covid-19 with flexdashboard"
 author: "Alice Tivarovsky"
 toc: true
-slug: covid-dashboard
 description: "Incidence, prevalence, and change over time in Covid-19 cases worldwide"
 date: '2020-08-05'
 categories: 

@@ -4,7 +4,6 @@ author: "Alice Tivarovsky"
 date: "2022-09-18"
 description: "Playing with `rvest` and web scraping"
 toc: true
-slug: string-func
 categories:
   - R
   - Web Scraping

@@ -3,7 +3,6 @@ title: "Adding Subset Buttons to `plot_ly` Plots"
 author: "Alice Tivarovsky"
 date: "2022-09-18"
 toc: true
-slug: plotly-buttons
 image: "plotly_thumbnail.png"
 description: "A great way to enhance the functionality of your `plot_ly` plots" 
 categories:

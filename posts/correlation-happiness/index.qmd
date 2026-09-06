@@ -3,7 +3,6 @@ title: "Correlation Analysis (Pearson, Spearman, and Kendall) using World Happin
 author: "Alice Tivarovsky"
 date: '2020-08-24'
 toc: true
-slug: correlation-happiness
 description: "What factors are most closely correlated with nation-level happiness?"
 categories:
   - Biostatistics

@@ -4,7 +4,6 @@ author: "Alice Tivarovsky"
 date: '2022-11-28'
 toc: true
 description: "A Concept Map for Learning/Reviewing Statistics"
-slug: stats-concept-map
 categories:
   - Biostatistics
 ---

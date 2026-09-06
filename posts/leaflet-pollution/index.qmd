@@ -5,7 +5,6 @@ date: "2022-08-25"
 description: "A first pass at geospatial analysis" 
 image: "map_thumbnail.png"
 toc: true
-slug: leaflet-pollution
 categories:
   - R
   - Data Visualization
