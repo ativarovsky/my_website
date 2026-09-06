@@ -7,8 +7,19 @@ website:
   site-url: "https://www.alicetivarovsky.com"
   favicon: favicon.png
   page-footer:
-    left: "© 2020-2026 Alice Tivarovsky"
+    left: |
+      © 2020-<span id="copyright-year"></span> Alice Tivarovsky
+      <script>
+        document.getElementById("copyright-year").textContent = new Date().getFullYear();
+      </script>
   navbar:
+    left:
+    - icon: linkedin
+      href: https://www.linkedin.com/in/alicetivarovsky/
+      aria-label: LinkedIn
+    - icon: github
+      href: https://github.com/ativarovsky
+      aria-label: GitHub
     right:
       - text: "Blog"
         href: blog.qmd
